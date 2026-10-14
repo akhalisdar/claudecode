@@ -28,7 +28,7 @@ em{font-style:italic;color:var(--brass-2)}
 p{margin:0}
 .label{font:500 11px/1 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
 .lead{font-size:clamp(17px,1.4vw,19px);color:var(--bone-2);max-width:34em}
-.num{font-family:var(--serif);font-style:italic;color:var(--brass)}
+.num{font-family:"Bodoni Moda",Amiri,serif;font-style:italic;color:var(--brass)}
 
 /* buttons */
 .btn{display:inline-flex;align-items:center;gap:12px;height:52px;padding:0 28px;border:1px solid var(--bone);font:500 12px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;cursor:pointer;background:var(--bone);color:var(--ink);transition:background .3s var(--ease),color .3s var(--ease),border-color .3s var(--ease)}
@@ -193,3 +193,8 @@ textarea.input{min-height:140px;resize:vertical}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
 }
+
+/* photo plate */
+.plate{margin:16px 0 0;padding:56px 0;border-top:1px solid var(--line)}
+.plate img{width:100%;height:auto;background:var(--ink-2)}
+.plate figcaption{margin-top:16px;color:var(--mute);font-size:13px;letter-spacing:.04em}
