@@ -1,70 +1,68 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>UAE Labour Law Poster</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f2442;--card:#fff;--ink:#1b2a41;--red:#c8102e;--grn:#00843d;--gold:#d4a017}
-*{box-sizing:border-box;margin:0}body{font-family:Poppins,sans-serif;background:linear-gradient(135deg,#0f2442,#1d3d6b);color:var(--ink);padding:24px 16px}
-.p{max-width:1100px;margin:auto}
-header{text-align:center;color:#fff;margin-bottom:22px}
-.flag{height:8px;max-width:260px;margin:0 auto 14px;border-radius:4px;background:linear-gradient(90deg,var(--red) 25%,var(--grn) 25% 50%,#fff 50% 75%,#000 75%)}
-h1{font-size:clamp(28px,5vw,48px);font-weight:800}h1 span{color:var(--gold)}
-header p{opacity:.85;margin-top:6px}
-.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
-.c{background:var(--card);border-radius:16px;padding:20px;border-top:6px solid var(--a);box-shadow:0 10px 30px #0004}
-.c h2{font-size:19px;display:flex;gap:10px;align-items:center;margin-bottom:10px;color:var(--a)}
-.c h2 b{font-size:26px}
-ul{padding-left:18px;font-size:14px;line-height:1.55}li{margin-bottom:4px}
-.big{display:inline-block;background:var(--a);color:#fff;font-weight:800;border-radius:8px;padding:2px 8px}
-.f{background:#f3f6fb;border-radius:10px;padding:10px;font-size:13px;margin-top:8px;font-family:monospace}
-footer{color:#fff;text-align:center;font-size:12px;opacity:.75;margin-top:22px}
-@media print{body{background:#0f2442;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+:root{--bg:#07111f;--ink:#e8eef7;--mute:#93a3ba;--line:#ffffff14}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);
+ background-image:radial-gradient(900px 500px at 10% -10%,#1b4d8a55,transparent),radial-gradient(800px 500px at 100% 110%,#c8a24a33,transparent)}body{font-family:Inter,sans-serif;color:var(--ink);padding:44px 16px}
+.p{max-width:1500px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:34px;padding-bottom:26px;border-bottom:1px solid var(--line)}
+.tag{display:inline-flex;gap:8px;align-items:center;font:600 12px Inter;letter-spacing:.18em;text-transform:uppercase;color:#d9b45a}
+.tag i{width:28px;height:4px;border-radius:2px;background:linear-gradient(90deg,#c8102e 25%,#00843d 25% 50%,#fff 50% 75%,#111 75%)}
+h1{font:900 clamp(40px,6vw,84px)/.95 Outfit;letter-spacing:-.03em;margin-top:12px}
+h1 em{font-style:normal;background:linear-gradient(90deg,#f3d27a,#c8a24a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mute);max-width:420px;font-size:15px;line-height:1.6;text-align:right}
+.sub b{color:var(--ink)}
+.g{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+@media(max-width:1000px){.g{grid-template-columns:1fr}.sub{text-align:left}}
+.c{position:relative;border-radius:22px;padding:26px;background:linear-gradient(160deg,#ffffff0d,#ffffff04);border:1px solid var(--line);overflow:hidden}
+.c::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--a)}
+.c::after{content:"";position:absolute;width:260px;height:260px;right:-90px;top:-110px;background:radial-gradient(var(--a),transparent 65%);opacity:.18}
+.h{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.n{font:700 13px Outfit;color:var(--a);border:1px solid var(--a);border-radius:99px;padding:3px 10px}
+h2{font:700 22px Outfit;letter-spacing:-.01em}
+.s{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:10px;margin-bottom:18px}
+.t{background:#ffffff08;border:1px solid var(--line);border-radius:14px;padding:12px}
+.t b{display:block;font:900 32px/1 Outfit;color:var(--a)}
+.t b small{font-size:15px;font-weight:700;margin-left:2px}
+.t span{display:block;font-size:12px;color:var(--mute);margin-top:6px;line-height:1.35}
+ul{list-style:none;font-size:14px;line-height:1.5;color:#c9d4e3}
+li{padding:7px 0 7px 18px;position:relative;border-top:1px dashed var(--line)}
+li::before{content:"";position:absolute;left:0;top:15px;width:7px;height:7px;border-radius:2px;background:var(--a)}
+li b{color:#fff;font-weight:600}
+.f{margin-top:14px;border-radius:14px;padding:14px 16px;background:#00000040;border:1px solid var(--line);font:500 14px/1.7 Outfit}
+.f u{text-decoration:none;color:var(--a);font-weight:700}
+footer{margin-top:26px;display:flex;justify-content:space-between;color:var(--mute);font-size:12px;flex-wrap:wrap;gap:8px}
+@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style></head><body><div class="p">
-<header><div class="flag"></div><h1>UAE <span>Employment</span> Law</h1>
-<p>Federal Decree-Law No. 33 of 2021 — Leave · Termination · Gratuity · Minors · Equality · Disputes</p></header>
+<header><div><div class="tag"><i></i>Unit 12 · SLO4</div><h1>UAE Employment<br><em>&amp; Labour Law</em></h1></div>
+<p class="sub">Your rights at a glance under <b>Federal Decree-Law No. 33 of 2021</b> — leave, termination, gratuity, minors, equality and disputes.</p></header>
 <div class="g">
 
-<div class="c" style="--a:#1d6fd8"><h2><b>📅</b>Weekly Rest & Public Holidays</h2><ul>
-<li>At least <span class="big">1 paid rest day</span> per week</li>
-<li>Paid leave on all official public holidays (set by Cabinet)</li>
-<li>Working on a holiday/rest day → <b>substitute day off</b> or <b>basic wage + 50%</b></li>
-<li>Overtime: <b>+25%</b>; <b>+50%</b> if between 10 pm – 4 am</li>
-<li>Max 8 hrs/day, 48 hrs/week; overtime ≤ 2 hrs/day</li></ul></div>
+<section class="c" style="--a:#4ea3ff"><div class="h"><span class="n">01</span><h2>Weekly Rest &amp; Holidays</h2></div>
+<div class="s"><div class="t"><b>1<small>day</small></b><span>paid rest per week</span></div><div class="t"><b>+50<small>%</small></b><span>for working a holiday</span></div><div class="t"><b>48<small>h</small></b><span>max working week</span></div></div>
+<ul><li><b>Public holidays</b> are fully paid, as set by the Cabinet</li><li>Work a holiday or rest day → <b>substitute day off</b> or basic wage + 50%</li><li>Overtime <b>+25%</b>, or <b>+50%</b> between 10 pm – 4 am</li></ul></section>
 
-<div class="c" style="--a:#00843d"><h2><b>🌴</b>Annual & Sick Leave</h2><ul>
-<li>Annual: <span class="big">30 days</span>/year after 1 year</li>
-<li>6–12 months service: <b>2 days per month</b></li>
-<li>Paid at basic wage + housing allowance; unused leave paid out on exit</li>
-<li>Sick (after probation): <span class="big">90 days</span>/year<br>15 full pay · 30 half pay · 45 unpaid</li>
-<li>Medical report required within 3 days</li></ul></div>
+<section class="c" style="--a:#34d399"><div class="h"><span class="n">02</span><h2>Annual &amp; Sick Leave</h2></div>
+<div class="s"><div class="t"><b>30<small>days</small></b><span>annual leave after 1 year</span></div><div class="t"><b>90<small>days</small></b><span>sick leave per year</span></div></div>
+<ul><li><b>6–12 months:</b> 2 days’ leave per month worked</li><li>Sick pay: <b>15 full · 30 half · 45 unpaid</b> (after probation)</li><li>Unused annual leave is <b>paid out</b> on leaving</li></ul></section>
 
-<div class="c" style="--a:#b5367a"><h2><b>👨‍👩‍👧</b>Family & Special Leave</h2><ul>
-<li>Maternity: <span class="big">60 days</span> — 45 full pay + 15 half pay (+45 unpaid if complications)</li>
-<li>Nursing breaks: 1 hr/day for 6 months</li>
-<li>Parental: <b>5 working days</b> within 6 months of birth (mother or father)</li>
-<li>Bereavement: <b>5 days</b> spouse · <b>3 days</b> parent, child, sibling, grandparent</li>
-<li>Hajj / Umrah: special leave (traditionally up to 30 days once in service, usually unpaid — by agreement)</li>
-<li>Study: 10 days/year (after 2 years’ service)</li></ul></div>
+<section class="c" style="--a:#f472b6"><div class="h"><span class="n">03</span><h2>Family &amp; Special Leave</h2></div>
+<div class="s"><div class="t"><b>60<small>days</small></b><span>maternity</span></div><div class="t"><b>5<small>days</small></b><span>parental</span></div><div class="t"><b>3–5<small>d</small></b><span>bereavement</span></div></div>
+<ul><li>Maternity: <b>45 days full + 15 half pay</b>, plus nursing breaks</li><li>Bereavement: <b>5 days</b> spouse, <b>3 days</b> parent / child / sibling</li><li><b>Hajj &amp; Umrah:</b> special leave by agreement (up to 30 days, usually unpaid)</li></ul></section>
 
-<div class="c" style="--a:#c8102e"><h2><b>📝</b>Termination & Notice</h2><ul>
-<li>Notice period: <span class="big">30–90 days</span> (written, per contract)</li>
-<li>Full wage paid during notice, or payment in lieu</li>
-<li>Employer-issued notice: 1 paid day off/week to job-hunt</li>
-<li>Instant dismissal only for gross misconduct (Art. 44)</li>
-<li>Final settlement within <span class="big">14 days</span>: wages, leave, gratuity, repatriation ticket</li></ul></div>
+<section class="c" style="--a:#fb7185"><div class="h"><span class="n">04</span><h2>Termination &amp; Notice</h2></div>
+<div class="s"><div class="t"><b>30–90<small>d</small></b><span>written notice period</span></div><div class="t"><b>14<small>days</small></b><span>to pay final settlement</span></div></div>
+<ul><li><b>Full wage</b> during notice, or payment in lieu</li><li>Settlement covers <b>wages, leave, gratuity</b> &amp; ticket home</li><li>Dismissal without notice only for <b>gross misconduct</b> (Art. 44)</li></ul></section>
 
-<div class="c" style="--a:#d4a017"><h2><b>💰</b>End-of-Service Gratuity</h2><ul>
-<li>Requires <b>1+ year</b> continuous service</li>
-<li>Based on last <b>basic wage</b> only (no allowances)</li>
-<li><b>21 days</b> per year for first 5 years</li>
-<li><b>30 days</b> per year after 5 years</li>
-<li>Capped at <b>2 years’</b> total wage; part-years pro-rata</li></ul>
-<div class="f">Daily wage = Basic ÷ 30<br>Gratuity = Daily × 21 × yrs(≤5)<br>&nbsp;&nbsp;+ Daily × 30 × yrs(&gt;5)<br>e.g. AED 9,000 basic, 7 yrs →<br>300×21×5 + 300×30×2 = <b>AED 49,500</b></div></div>
+<section class="c" style="--a:#f3c95a"><div class="h"><span class="n">05</span><h2>End-of-Service Gratuity</h2></div>
+<div class="s"><div class="t"><b>21<small>days</small></b><span>per year, years 1–5</span></div><div class="t"><b>30<small>days</small></b><span>per year after 5</span></div><div class="t"><b>2<small>yrs</small></b><span>maximum cap</span></div></div>
+<ul><li>Needs <b>1+ year</b> of continuous service</li><li>Uses last <b>basic wage only</b>, with no allowances</li></ul>
+<div class="f">Daily wage = Basic ÷ 30<br>Example: AED 9,000 basic, 7 yrs<br>300×21×5 + 300×30×2 = <u>AED 49,500</u></div></section>
 
-<div class="c" style="--a:#5b3fc4"><h2><b>⚖️</b>Protection & Disputes</h2><ul>
-<li><b>Minors:</b> min. age 15; guardian consent + medical fitness; max 6 hrs/day; no night work (8 pm–6 am), overtime or hazardous jobs</li>
-<li><b>Equality:</b> no discrimination by race, colour, sex, religion, origin or disability; <b>equal pay for women</b></li>
-<li>Harassment, bullying & forced labour banned</li>
-<li><b>MoHRE:</b> file complaint (app / 80084) → amicable settlement; else referred to court</li>
-<li>MoHRE rules on claims up to <span class="big">AED 50,000</span>; claim within 2 years</li></ul></div>
+<section class="c" style="--a:#a78bfa"><div class="h"><span class="n">06</span><h2>Protection &amp; Disputes</h2></div>
+<div class="s"><div class="t"><b>15<small>+</small></b><span>minimum working age</span></div><div class="t"><b>6<small>h</small></b><span>max day for minors</span></div><div class="t"><b>2<small>yrs</small></b><span>to file a claim</span></div></div>
+<ul><li><b>Minors:</b> guardian consent, no night, overtime or hazardous work</li><li><b>Equality:</b> no discrimination; <b>equal pay</b> for women</li><li><b>MoHRE:</b> complain via app / 80084 → settlement or court</li></ul></section>
 
-</div><footer>Unit 12 • SLO4 — Summary for education only; check MoHRE.gov.ae for current rules.</footer></div></body></html>
+</div><footer><span>For classroom use · Verify current rules at mohre.gov.ae</span><span>Leave · Termination · Gratuity · Minors · Equality · Disputes</span></footer></div></body></html>
