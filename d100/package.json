@@ -1,0 +1,1 @@
+{"name":"d100","private":true,"scripts":{"build":"python3 build.py","test":"node tests/flow.js dist/index.html","shots":"node tests/shoot.js dist/index.html screens"}}
