@@ -73,9 +73,16 @@ const LOGOS=/*LOGOS*/{};
 /* w,h: the size each logo is shown at, in CSS px. Chosen so the nine marks carry about the same optical weight (same area, corrected for how much ink the mark has),
    and so every file has at least 3 device pixels per CSS pixel. The files themselves are untouched. */
 const BANKS=[{id:'up',n:'UP by CBD',m:'UP',u:'https://www.cbd.ae',rec:1,w:68,h:31},{id:'enbd',n:'Emirates NBD',m:'ENBD',u:'https://www.emiratesnbd.com',w:92,h:25},{id:'adib',n:'ADIB',m:'ADIB',u:'https://www.adib.ae',w:92,h:16},
- {id:'mashreq',n:'Mashreq',m:'M',u:'https://www.mashreq.com',w:92,h:24},{id:'rak',n:'RAKBANK',m:'RAK',u:'https://www.rakbank.ae',w:92,h:14},{id:'wio',n:'Wio Bank',m:'Wio',u:'https://www.wio.io',w:68,h:26},
+ {id:'mashreq',n:'Mashreq',m:'M',u:{en:'https://www.mashreq.com/en/uae/business/',ar:'https://www.mashreq.com/ar/uae/business/'},w:92,h:24},{id:'rak',n:'RAKBANK',m:'RAK',u:'https://www.rakbank.ae',w:92,h:14},{id:'wio',n:'Wio Bank',m:'Wio',u:'https://www.wio.io',w:68,h:26},
  {id:'dib',n:'Dubai Islamic Bank',m:'DIB',u:'https://www.dib.ae',w:92,h:22},{id:'adcb',n:'ADCB',m:'ADCB',u:'https://www.adcb.com',w:80,h:24},{id:'fab',n:'First Abu Dhabi Bank',m:'FAB',u:'https://www.bankfab.com',w:54,h:32}];
-const LINK={det:'https://www.investindubai.gov.ae',dm:'https://www.dm.gov.ae',dld:'https://dubailand.gov.ae',fta:'https://tax.gov.ae',mof:'https://mof.gov.ae',box:'https://sme.ae'};
+/* Official sites only. A deeper page is used where it was confirmed to return 200 (node tests/links.js); otherwise the home page.
+   {en,ar} = the same service page in each language. */
+const LINK={det:'https://www.investindubai.gov.ae',dm:'https://www.dm.gov.ae',
+ dld:{en:'https://dubailand.gov.ae/en/eservices/register-renew-ejari-contract',ar:'https://dubailand.gov.ae/ar/eservices/register-renew-ejari-contract'},
+ fta:{en:'https://tax.gov.ae/en/services/corporate.tax.registration.aspx',ar:'https://tax.gov.ae/ar/services/corporate.tax.registration.aspx'},
+ mof:{en:'https://mof.gov.ae/en/about-us/initiatives/einvoicing/',ar:'https://mof.gov.ae/ar/about-us/initiatives/einvoicing/'},box:'https://sme.ae'};
+const U=x=>!x||typeof x==='string'?x:(x[lang]||x.en);
+const hostOf=u=>u.replace(/^https?:\/\/(www\.)?/,'').split('/')[0];
 const PLINK={esp:'https://sme.ae',mbrf:'https://sme.ae',box:'https://sme.ae'};
 const PRE={cafe:{s4:['s3'],s5:['s4'],s6:['s4'],s8:['s5','s6'],s9:['s2'],s11:['s8'],s13:['s9'],s15:['s11']},shop:{s5:['s4'],s8:['s5'],s9:['s2'],s11:['s8'],s13:['s9'],s15:['s11']}};
 const SK=()=>S.skip||(S.skip={});
@@ -217,7 +224,7 @@ roadmap(){const st=steps(),nx=nextOpen(),done=st.filter(s=>S.done[s.id]),sk=st.f
   return shell(bar(),h,'roadmap')},
 
 step(id){const st=steps(),s=stepById(id)||nextOpen()||st[0],dn=S.done[s.id],pv=s.cat?P[s.cat]:null,pk=S.picks[s.id],n=s.due-S.day,fine=s.fine?aed(s.fine):(s.fineTxt?L(s.fineTxt):''),
-   lk=LINK[s.a],pre=blockers(s),w=sents(whyText(s)),own=pk==='own',okPick=pk&&(!own||(OWN[s.id]||'').trim()),seen=VIS[s.id];
+   lk=U(LINK[s.a]),pre=blockers(s),w=sents(whyText(s)),own=pk==='own',okPick=pk&&(!own||(OWN[s.id]||'').trim()),seen=VIS[s.id];
   const learn=`<details class="learn"><summary>${t('learn')}</summary>${w.length>1?`<p>${w.slice(1).join(' ')}</p>`:''}<b>${t('need')}</b><ul>${s.d.map(x=>`<li>${L(x)}</li>`).join('')}</ul>${pv?`<p class="note">${t('rank')}</p><p class="note">${t('sample')}</p>`:''}${s.soft?`<p class="note">${t('sampleStep')}</p>`:''}<p class="note">${t('pilotNote')}</p></details>`;
   let foot='',h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:st.indexOf(s)+1,m:st.length})}</b>${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}${dn||s.auto?'':t('sep')+when(n).toLowerCase()}</p><h1>${L(s.t)}</h1>
    <p class="body">${w[0]}</p>${fine?`<p class="risk">${t('missed')}: ${fine}</p>`:''}${!dn&&SK()[s.id]?`<p class="note">${t('skOn',{d:SK()[s.id]})}</p>`:''}`;
@@ -227,7 +234,7 @@ step(id){const st=steps(),s=stepById(id)||nextOpen()||st[0],dn=S.done[s.id],pv=s
   else{
    if(pv)h+=`<h2>${t('choose')}</h2><div class="opts" role="radiogroup">${pv.map(p=>opt(p,s.id)).join('')}<button class="opt" role="radio" aria-checked="${own}" data-act="pick:${s.id}:own"><span class="rd"></span><b>${t('ownP')}</b></button></div>
      ${own?`<input id="own" data-step="${s.id}" type="text" maxlength="40" placeholder="${t('ownPh')}" value="${esc(OWN[s.id]||'')}" style="margin-top:10px">`:''}`;
-   if(lk)h+=`<a class="btn${seen?' sec':''}" style="margin-top:18px" href="${lk}" target="_blank" rel="noopener" data-act="visit:${s.id}">${t('openSite',{n:L(A[s.a])})}${I.ext}</a><p class="note">${t('goesTo',{h:lk.replace(/^https?:\/\/(www\.)?/,'')})}</p>`;
+   if(lk)h+=`<a class="btn${seen?' sec':''}" style="margin-top:18px" href="${lk}" target="_blank" rel="noopener" data-act="visit:${s.id}">${t('openSite',{n:L(A[s.a])})}${I.ext}</a><p class="note">${t('goesTo',{h:hostOf(lk)})}</p>`;
    h+=learn;foot=`<button class="btn${lk&&!seen?' sec':''}" data-act="done:${s.id}" ${pv&&!okPick?'disabled':''}>${pv?(okPick?t('confirmPick'):t('pickFirst')):(lk&&!seen?t('already'):t('iDid'))}</button>${skipBtn(s)}`}
   return shell(sub(t('tRoad'),'roadmap'),h,'roadmap',foot)+skipSheet(s)},
 
@@ -236,7 +243,7 @@ bank(){const st=steps(),dn=S.done.s2,pk=S.bankPick||'up',bk=BANKS.find(x=>x.id==
   if(dn)h+=`<p class="note">${t('bkDone',{d:dn})}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}`;
   else h+=`<div class="banks" role="radiogroup">${BANKS.map(x=>`<button class="bk" role="radio" aria-checked="${pk===x.id}" data-act="bankpick:${x.id}">${LOGOS[x.id]?`<img${x.id==='up'?' class="dk"':''} src="${LOGOS[x.id]}" width="${x.w}" height="${x.h}" alt="${x.n}">`:`<span class="mono">${x.m}</span><span>${x.n}</span>`}${x.rec?`<small>${t('recommended')}</small>`:''}</button>`).join('')}</div>
    <p class="note" style="margin-top:8px">${pk==='up'?t('propPartner')+'. ':''}${t('notPartners')}</p>
-   <a class="btn${seen?' sec':''}" style="margin-top:16px" href="${bk.u}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bk.n})}${I.ext}</a><p class="note">${t('goesTo',{h:bk.u.replace(/^https?:\/\/(www\.)?/,'')})}</p>
+   <a class="btn${seen?' sec':''}" style="margin-top:16px" href="${U(bk.u)}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bk.n})}${I.ext}</a><p class="note">${t('goesTo',{h:hostOf(U(bk.u))})}</p>
    <details class="learn"><summary>${t(pk==='up'?'bkWhat':'learn')}</summary>${pk==='up'?`<ul>${['bk1','bk2','bk3'].map(k=>`<li>${t(k)}</li>`).join('')}</ul><p class="note">${t('bkSrc')}</p>`:`<p>${t('anyP')}</p>`}</details>`,foot=`<button class="btn${seen?'':' sec'}" data-act="done:s2">${seen?t('iDid'):t('already')}</button>${skipBtn(st[1])}`;
   return shell(sub(t('tRoad'),'roadmap'),h,'roadmap',foot)+skipSheet(st[1])},
 

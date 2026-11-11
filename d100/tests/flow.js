@@ -157,6 +157,14 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
   const areas = im.map(i => i.area), ratio = Math.max(...areas) / Math.min(...areas);
   await pg.goto(f + '#/landing'); await pg.waitForTimeout(200); const cbd = await pg.evaluate(() => { const i = document.querySelector('#app .byc img'), r = i.getBoundingClientRect(); return { sharp: i.naturalWidth >= r.width * 3 * .98, w: i.naturalWidth, shown: Math.round(r.width), alt: i.alt }; });
   ok('G21', im.length === 9 && im.every(i => i.alt && i.sharp && i.inside) && ratio < 1.9 && cbd.sharp && !!cbd.alt, 'nine logos with alt text, all sharp at 3x, largest to smallest area ' + ratio.toFixed(2) + ':1 (was 3.5:1); CBD logo ' + cbd.w + 'px for a ' + cbd.shown + 'px slot'); await pg.context().close(); }
+// G22 links: confirmed official service pages, in the judge's language, and nothing outside the official domains
+{ const OFFICIAL = ['investindubai.gov.ae', 'dm.gov.ae', 'dubailand.gov.ae', 'tax.gov.ae', 'mof.gov.ae', 'sme.ae', 'cbd.ae', 'emiratesnbd.com', 'adib.ae', 'mashreq.com', 'rakbank.ae', 'wio.io', 'dib.ae', 'adcb.com', 'bankfab.com'];
+  const href = async r => { await p.goto(f + '#/' + r); await w(80); return p.locator('#app a.btn[target=_blank]').getAttribute('href'); }; const got = {};
+  got.fta = await href('step/s12?s=new&lang=en'); got.ftaAr = await href('step/s12?lang=ar'); got.dld = await href('step/s3?lang=en'); const note = one(await p.locator('#app .view a.btn[target=_blank] + p.note').innerText());
+  await p.goto(f + '#/bank?lang=en'); await w(80); await p.click('#app .bk >> nth=3'); await w(80); got.mashreq = await p.locator('#app a.btn[target=_blank]').getAttribute('href');
+  const all = [...new Set((fs.readFileSync('src/app.js', 'utf8').match(/https?:\/\/[^'"`\s)<]+/g) || []))], stray = all.filter(u => !u.startsWith('https://') || !OFFICIAL.some(d => new URL(u).hostname === d || new URL(u).hostname === 'www.' + d));
+  ok('G22', got.fta === 'https://tax.gov.ae/en/services/corporate.tax.registration.aspx' && got.ftaAr === 'https://tax.gov.ae/ar/services/corporate.tax.registration.aspx' && /eservices\/register-renew-ejari-contract$/.test(got.dld) && got.mashreq === 'https://www.mashreq.com/en/uae/business/' && /Opens dubailand\.gov\.ae in a new tab/.test(note) && stray.length === 0,
+    'corporate tax, Ejari and e-invoicing open the service page in the page language; Mashreq opens its business page; all ' + all.length + ' links are https on official domains' + (stray.length ? ' EXCEPT ' + stray.join(' ') : '')); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
