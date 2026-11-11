@@ -55,6 +55,10 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
 // G03 no alef followed by fathatan anywhere in the Arabic screens (WebKit lifts the word off the baseline)
 { const hit = arText.join(' ').match(/\S*\u0627\u064B\S*/g) || []; await p.goto(f + '#/landing?lang=en'); await w(80); const lic = (await p.locator('#app .lic').innerText()).match(/\S*\u0627\u064B\S*/g) || [];
   ok('G03', hit.length + lic.length === 0 && /\u064B\u0627/.test(arText.join(' ')), 'tanween sits before the alef in all ' + arText.length + ' Arabic screens and on the licence card' + (hit.length ? ': ' + hit.slice(0, 3).join(' ') : '')); }
+// G04 no letter-spacing on any element that holds Arabic text
+{ const bad = []; for (const r of ['tiers', 'cash', 'stars', 'step/s7?s=warn', 'roadmap', 'day100', 'nudges']) { await p.goto(`${f}#/${r}${r.includes('?') ? '&' : '?'}lang=ar`); await w(60);
+    bad.push(...await p.evaluate(() => { const o = []; const tw = document.createTreeWalker(document.querySelector('#app'), NodeFilter.SHOW_TEXT); let n; while ((n = tw.nextNode())) { if (!/[\u0600-\u06FF]/.test(n.nodeValue)) continue; const e = n.parentElement, ls = e.closest('svg') ? (e.getAttribute('letter-spacing') || '0') : getComputedStyle(e).letterSpacing; if (ls !== 'normal' && parseFloat(ls) !== 0) o.push(n.nodeValue.trim().slice(0, 16) + ' ' + ls); } return o; })); }
+  ok('G04', bad.length === 0, 'no letter-spacing on Arabic text' + (bad.length ? ': ' + bad.slice(0, 3).join(', ') : '')); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

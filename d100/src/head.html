@@ -259,7 +259,7 @@ details.donelist[open] summary::after{content:"\2013"}
 .tier header b{font-weight:600;font-size:16px}
 .tier .p{font:600 24px/1 var(--serif);white-space:nowrap;letter-spacing:-.01em}
 .tier .p small{font:400 13px/1 var(--sans);color:var(--ink2);letter-spacing:0}
-[dir=rtl] .tier .p{font:700 20px/1.2 var(--sans)}
+[dir=rtl] .tier .p{font:700 20px/1.2 var(--sans);letter-spacing:0}
 .tier ul{margin:0;padding:0;list-style:none;display:grid;gap:5px;font-size:14.5px}
 .tier li{display:flex;gap:8px}
 .tier li .ico{width:17px;height:17px;margin-top:3px;stroke-width:2.2}
@@ -306,6 +306,8 @@ input[type=range]{width:100%;accent-color:var(--ink);margin:12px 0 0;height:30px
 
 .up{display:flex;align-items:center;gap:10px;border:1px solid var(--ink);border-radius:10px;padding:10px 12px;margin-top:14px;font-size:14px;line-height:1.35;background:var(--sheet);color:inherit;text-decoration:none}
 .up i{font:600 11px/1 var(--sans);letter-spacing:.04em;background:var(--ink);color:#fff;padding:5px 7px;border-radius:4px;flex:none}
+/* no letter-spacing on Arabic: it breaks the joins on iOS */
+[dir=rtl] .up i{letter-spacing:0}
 .up>span{flex:1}
 .up .ico{flex:none;width:18px;height:18px}
 .skip{display:block;width:100%;margin:6px 0 0;background:none;border:0;font:500 14.5px var(--sans);color:var(--ink2);text-decoration:underline;text-underline-offset:3px;padding:10px;min-height:44px;cursor:pointer;text-align:center}
