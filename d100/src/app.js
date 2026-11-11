@@ -461,9 +461,14 @@ addEventListener('resize',()=>{const w=matchMedia(WIDE).matches;if(w!==wide)rend
 if(!load()&&/^ar\b/i.test(navigator.language||''))lang='ar';
 TRAIL.push(keyOf());
 {const ql=parse().q.get('lang');if(ql)lang=ql==='ar'?'ar':'en'}
-/* first paint: wait for the fonts of the first screen (they are preloaded), at most 0.9s, so the text does not jump when they swap in. The static shell shows meanwhile. */
-const FONTS={en:[['400 16px "IBM Plex Sans"','D'],['600 16px "IBM Plex Sans"','D'],['600 16px "IBM Plex Serif"','D']],ar:[['400 16px "IBM Plex Sans Arabic"','\u0639'],['700 16px "IBM Plex Sans Arabic"','\u0639'],['400 16px "IBM Plex Sans"','1']]};
-const fonts=l=>document.fonts&&document.fonts.load?Promise.all(FONTS[l].map(f=>document.fonts.load(f[0],f[1]))).catch(()=>{}):Promise.resolve();
-let booted=false;const boot=()=>{if(booted)return;booted=true;render();setTimeout(()=>fonts(rtl()?'en':'ar'),1500)};
-fonts(lang).then(boot);setTimeout(boot,900);
+/* first paint: wait for the fonts of the first screen so the text does not jump when they swap in. The static shell shows meanwhile.
+   FIRST are the page language's own fonts (the Latin ones are preloaded in index.html). REST are the other script's fonts, which the licence card and the
+   language switch use: they get 150ms more. On a normal connection everything is there within that time. */
+const F={sans:['400 16px "IBM Plex Sans"','D'],sansB:['600 16px "IBM Plex Sans"','D'],serif:['600 16px "IBM Plex Serif"','D'],mono:['500 16px "IBM Plex Mono"','1'],ar:['400 16px "IBM Plex Sans Arabic"','\u0639'],arB:['700 16px "IBM Plex Sans Arabic"','\u0639']};
+const FIRST={en:[F.sans,F.sansB,F.serif,F.mono],ar:[F.ar,F.arB,F.sans]},REST={en:[F.ar,F.arB],ar:[F.mono,F.sansB,F.serif]};
+const fonts=list=>document.fonts&&document.fonts.load?Promise.all(list.map(f=>document.fonts.load(f[0],f[1]))).catch(()=>{}):Promise.resolve();
+/* the script arriving late means a slow connection: draw at once and let the fonts swap in. Otherwise give the fonts up to 0.4s; they normally need far less. */
+const WAIT=performance.now()>900?0:400;
+let booted=false;const boot=()=>{if(booted)return;booted=true;render()};
+if(WAIT)fonts(FIRST[lang]).then(()=>Promise.race([fonts(REST[lang]),new Promise(r=>setTimeout(r,150))])).then(boot);setTimeout(boot,WAIT);
 })();

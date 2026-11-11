@@ -18,7 +18,7 @@ FACES = [("IBM Plex Sans", "100 700", "ibm-plex-sans-latin-wght-normal.woff2", L
          ("IBM Plex Sans Arabic", "400", "ibm-plex-sans-arabic-arabic-400-normal.woff2", ARABIC, False),
          ("IBM Plex Sans Arabic", "500 700", "ibm-plex-sans-arabic-arabic-600-normal.woff2", ARABIC, False),
          ("IBM Plex Serif", "500 700", "ibm-plex-serif-latin-600-normal.woff2", LATIN, True),
-         ("IBM Plex Mono", "400 600", "ibm-plex-mono-latin-500-normal.woff2", LATIN, False)]
+         ("IBM Plex Mono", "400 600", "ibm-plex-mono-latin-500-normal.woff2", LATIN, True)]
 # clean URL -> hash route, label for the fallback link
 STUBS = [("plan", "#/roadmap", "Open the plan"), ("bank", "#/bank", "Open the bank step"), ("cash", "#/cash", "Open the cash view"),
          ("record", "#/stars", "Open the record"), ("providers", "#/market", "Open the providers"), ("plans", "#/tiers", "Open the plans"),
@@ -78,9 +78,13 @@ def site(dist):
          '<meta property="og:image" content="%s/og.png">' % SITE, '<meta property="og:image:width" content="1200">', '<meta property="og:image:height" content="630">',
          '<meta name="twitter:card" content="summary_large_image">',
          '<link rel="icon" href="/favicon.ico" sizes="32x32">', '<link rel="icon" href="/favicon.svg" type="image/svg+xml">', '<link rel="apple-touch-icon" href="/apple-touch-icon.png">']
+        # the script first and at high priority: nothing shows without it. Deferred scripts are low priority by default and would queue behind the fonts.
+        + ['<script defer src="assets/%s" fetchpriority="high"></script>' % js]
         + ['<link rel="preload" href="assets/%s" as="font" type="font/woff2" crossorigin>' % font_names[f] for _, _, f, _, pre in FACES if pre]
-        + ["<style>%s</style>" % inline, '<link rel="stylesheet" href="assets/%s">' % css, '<script defer src="assets/%s"></script>' % js])
-    (dist / "index.html").write_text(read("src/head.html").replace("<!--HEAD-->", head).replace("<!--SCRIPT-->", ""), encoding="utf-8")
+        + ["<style>%s</style>" % inline])
+    # app.css is not needed for the shell or the landing screen, so it sits at the end of <body>: it does not hold up the first paint,
+    # and the deferred script still waits for it before it runs.
+    (dist / "index.html").write_text(read("src/head.html").replace("<!--HEAD-->", head).replace("<!--SCRIPT-->", '<link rel="stylesheet" href="assets/%s">' % css), encoding="utf-8")
 
     # icons and the Open Graph image, made from the D100 stamp by tools/make-icons.js
     for f in ["favicon.ico", "favicon.svg", "apple-touch-icon.png", "og.png"]:

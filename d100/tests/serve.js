@@ -3,6 +3,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const zlib = require('zlib');
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.woff2': 'font/woff2', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
@@ -38,7 +39,10 @@ function serve(root, single) {
     const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' };
     // Cloudflare's rules: every matching block applies; "! Name" removes a header set by an earlier block; a repeated header is joined with a comma
     for (const r of rules) if (r.re.test(p)) for (const [k, v] of r.headers) { if (k.startsWith('!')) delete headers[k.slice(1).trim()]; else headers[k] = headers[k] && k !== 'Content-Type' ? headers[k] + ', ' + v : v; }
-    res.writeHead(status, headers); res.end(fs.readFileSync(file));
+    // compress text the way Cloudflare does, so measured transfer sizes are realistic
+    let body = fs.readFileSync(file);
+    if (/\.(html|js|css|svg)$/.test(file) && /\bgzip\b/.test(req.headers['accept-encoding'] || '')) { body = zlib.gzipSync(body); headers['Content-Encoding'] = 'gzip'; }
+    res.writeHead(status, headers); res.end(body);
   });
   return new Promise(ok => server.listen(0, '127.0.0.1', () => ok({ url: 'http://127.0.0.1:' + server.address().port, close: () => server.close() })));
 }
