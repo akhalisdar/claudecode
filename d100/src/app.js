@@ -57,7 +57,7 @@ const sents=s=>{const o=[];let a=0;for(let i=0;i<s.length-1;i++)if('.!؟'.indexO
 const plus=n=>'<bdi dir="ltr">+'+n+'</bdi>';
 const DEF_BIZ='Sidr Specialty Coffee', DEF_BIZ_AR='سدر للقهوة المختصة';
 let CK={},VIS={},OWN={};
-const TRAIL=[],SCR={};let goingBack=false;
+const TRAIL=[],SCR={};let goingBack=false,applied=null,opener='';
 /* ---------- saved state: survives a refresh and iOS reloading the tab. Versioned key; "Reset" in More wipes it. ---------- */
 const KEY='d100:v1';
 function save(){try{const c=Object.assign({},S);delete c.slam;delete c.warn;delete c.sheet;localStorage.setItem(KEY,JSON.stringify({S:c,lang,VIS,OWN,cat}))}catch(e){}}
@@ -81,9 +81,9 @@ const holds=s=>{const m=PRE[S.activity]||PRE.cafe;return steps().filter(q=>(m[q.
 const sell=(tier,k)=>`<a class="up" href="#/tiers"><i>${t(tier)}</i><span>${t(k)}</span>${I.chev}</a>`;
 const skipBtn=s=>SK()[s.id]?'':`<button class="skip" data-act="warn:${s.id}">${t('skip')}</button>`;
 function skipSheet(s){if(S.warn!==s.id)return '';const hd=holds(s),fine=s.fine?aed(s.fine):(s.fineTxt?L(s.fineTxt):'');
-  return `<div class="sheet-bg" data-act="warn:"><div class="sheet" data-stop="1"><h3>${t('skQ')}</h3><p class="body" style="margin:6px 0 0">${L(s.t)}${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}</p>
+  return `<div class="sheet-bg" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t" tabindex="-1" data-stop="1"><h3 id="sheet-t">${t('skQ')}</h3><p class="body" style="margin:6px 0 0">${L(s.t)}${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}</p>
   ${fine?`<p class="risk">${t('missed')}: ${fine}</p>`:''}${hd.length?`<p class="note">${t('skHolds')}: ${hd.map(q=>L(q.t)).join(t('sep'))}</p>`:''}<p class="note">${t('skKeep')}</p>${sell('pro','upSkip')}
-  <button class="btn" style="margin-top:14px" data-act="warn:">${t('goBack')}</button><button class="btn sec" style="margin-top:8px" data-act="skip:${s.id}">${t('skAny')}</button></div></div>`}
+  <button class="btn" style="margin-top:14px" data-act="closesheet">${t('goBack')}</button><button class="btn sec" style="margin-top:8px" data-act="skip:${s.id}">${t('skAny')}</button></div></div>`}
 const hrefOf=s=>'#/'+(s.bank?'bank':'step/'+s.id);
 const bizName=()=>rtl()&&S.biz===DEF_BIZ?DEF_BIZ_AR:S.biz;
 const ic=(d,c='')=>`<svg class="ico ${c}" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
@@ -287,10 +287,10 @@ programmes(){const list=PROG.filter(p=>!p.em||S.emirati),sh=S.sheet&&PROG.find(p
   const h=`<h1>${t('prT')}</h1><p class="lede">${t('prS')}</p>`+list.map(p=>`<article class="prog"><small>${t('exMatch')}</small><h3>${L(p.n)}</h3><span class="by">${L(p.by)}</span><p>${L(p.p)}</p>
    <p class="why">${t('prWhy')}: ${L(p.y)}</p><button class="btn sec" data-act="sheet:${p.id}">${t('prGo')}</button></article>`).join('');
   let page=shell(sub(t('tMore')),h,'more');
-  if(sh)page+=`<div class="sheet-bg" data-act="sheet:"><div class="sheet" data-stop="1"><h3>${L(sh.n)}</h3><p class="note" style="margin:0">${t('shT')}</p>
+  if(sh)page+=`<div class="sheet-bg" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t" tabindex="-1" data-stop="1"><h3 id="sheet-t">${L(sh.n)}</h3><p class="note" style="margin:0">${t('shT')}</p>
    <dl class="dl"><dt>${t('shBiz')}</dt><dd>${esc(bizName())}</dd><dt>${t('shLic')}</dt><dd>${t('q1a')}</dd><dt>${t('shAct')}</dt><dd>${t(S.activity==='shop'?'q2b':'q2a')}</dd>
    <dt>${t('shOwn')}</dt><dd>${t(S.emirati?'q3a':'q3b')}</dd><dt>${t('shDay')}</dt><dd>${S.day}</dd><dt>${t('shRec')}</dt><dd>${'★'.repeat(starsOf(sc))||'–'} ${sc}</dd></dl>
-   <p class="note" style="margin:12px 0 14px">${t('shNote')}</p>${PLINK[sh.id]?`<a class="btn" style="margin-bottom:8px" href="${PLINK[sh.id]}" target="_blank" rel="noopener">${t('openSite',{n:L(sh.by)})}${I.ext}</a>`:''}<button class="btn sec" data-act="sheet:">${t('close')}</button></div></div>`;
+   <p class="note" style="margin:12px 0 14px">${t('shNote')}</p>${PLINK[sh.id]?`<a class="btn" style="margin-bottom:8px" href="${PLINK[sh.id]}" target="_blank" rel="noopener">${t('openSite',{n:L(sh.by)})}${I.ext}</a>`:''}<button class="btn sec" data-act="closesheet">${t('close')}</button></div></div>`;
   return page},
 
 nudges(){const h=`<h1>${t('ngT')}</h1><p class="lede">${t('ngS')}</p><div class="thread">
@@ -332,12 +332,14 @@ function parse(h){const raw=(h==null?location.hash:h).replace(/^#\/?/,''),[path,
 function html(name,arg){if(name==='step')return SC.step(arg||'s7');return (SC[name]||SC.roadmap)()}
 function render(){
   const r=parse();
+  /* ?lang= and the ?s= demo states apply once per link, not on every re-render, so a sheet opened by ?s=warn can be closed */
+  if(location.hash!==applied){applied=location.hash;
   if(r.q.get('lang'))lang=r.q.get('lang')==='ar'?'ar':'en';
   if(r.q.get('s')==='after'&&!S.done.s7){S.picks.s7='rateb';S.extra=[{n:'Rateb Payroll',mo:150}];S.done.s7=S.day;S.unlock=3}
   if(r.q.get('s')==='slam')S.slam={day:S.day};
   if(r.q.get('s')==='new'&&S.day!==1)S=fresh({biz:DEF_BIZ,activity:'cafe',emirati:true,capital:150000});
   if(r.q.get('s')==='skip'&&!S.done.s7)SK().s7=S.day;
-  if(r.q.get('s')==='warn')S.warn=r.arg||'s7';
+  if(r.q.get('s')==='warn')S.warn=r.arg||'s7';}
   document.documentElement.lang=lang;document.documentElement.dir=rtl()?'rtl':'ltr';
   wide=matchMedia('(min-width:900px)').matches;sid=0;
   const app=$('#app');app.dir=rtl()?'rtl':'ltr';
@@ -354,6 +356,9 @@ function render(){
   const mem=(app.dataset.route===key||goingBack)?SCR[key]:null;goingBack=false;
   app.innerHTML=html(name,r.arg)+(S.slam?`<div class="slam">${doneStamp(S.slam.day)}</div>`:'');
   app.dataset.route=key;
+  /* an open sheet is a modal dialog: the screen behind is inert and does not scroll, and focus moves into the sheet */
+  const sheet=$('.sheet',app);app.classList.toggle('has-sheet',!!sheet);
+  if(sheet){for(const ch of app.children)if(!ch.classList.contains('sheet-bg'))ch.setAttribute('inert','');if(!sheet.contains(document.activeElement))try{sheet.focus({preventScroll:true})}catch(e){sheet.focus()}}
   if(mem&&mem.open){const d=$('details.donelist',app);if(d)d.open=true}
   const v=$('.view',app)||$('.land',app);if(v&&mem)v.scrollTop=mem.y;
   pitch();save();
@@ -365,7 +370,13 @@ function shots(){const el=$('#shots');el.dir=rtl()?'rtl':'ltr';
 function say(k){toast=t(k);clearTimeout(toastT);toastT=setTimeout(()=>{toast=null;const el=$('#app .toast');if(el)el.remove()},2600)}
 function go(h){if(location.hash===h)render();else location.hash=h}
 
+/* sheets: opening one adds a history entry, so the phone's back button closes it. Closing by button, backdrop or Escape takes that entry away again. */
+function shut(){if(!S.warn&&!S.sheet)return;S.warn=null;S.sheet=null;render();const o=opener&&$('#app [data-act="'+opener+'"]');if(o)o.focus()}
+function closeSheet(){if(history.state&&history.state.sheet)history.back();else shut()}
+addEventListener('popstate',e=>{if(!(e.state&&e.state.sheet))shut()});
 document.addEventListener('click',e=>{
+  /* a link inside a sheet replaces the sheet's history entry instead of stacking on it */
+  const inSheet=e.target.closest('.sheet a[href^="#/"]');if(inSheet&&history.state&&history.state.sheet){e.preventDefault();S.warn=null;S.sheet=null;location.replace(inSheet.getAttribute('href'));return}
   /* in-app Back: go back in history when the plan is the previous entry, otherwise replace this entry. Either way no new entry, so the phone's back button never bounces to the step again. */
   const bk=e.target.closest('a.back');if(bk&&!e.metaKey&&!e.ctrlKey){e.preventDefault();const h=bk.getAttribute('href'),n=TRAIL.length;
     if(n>1&&TRAIL[n-2]===keyOf(h))history.back();else{TRAIL.pop();goingBack=true;location.replace(h)}return}
@@ -385,9 +396,10 @@ document.addEventListener('click',e=>{
   if(a==='visit'){S.touched=1;VIS[b]=1;save();setTimeout(render,400);return}
   if(a==='check'){CK[b]=!CK[b];render();return}
   if(a==='bankpick'){S.touched=1;S.bankPick=b;render();return}
-  if(a==='sheet'){S.sheet=b||null;render();return}
-  if(a==='warn'){S.warn=b||null;render();return}
-  if(a==='skip'){S.touched=1;SK()[b]=S.day;S.warn=null;const nx=nextOpen();say('toastSkip');go(nx?hrefOf(nx):'#/roadmap');return}
+  if(a==='sheet'||a==='warn'){if(a==='sheet')S.sheet=b;else S.warn=b;opener=el.dataset.act;try{history.pushState({sheet:1},'')}catch(e){}render();return}
+  if(a==='closesheet'){closeSheet();return}
+  if(a==='skip'){S.touched=1;SK()[b]=S.day;S.warn=null;const nx=nextOpen(),dest=nx?hrefOf(nx):'#/roadmap';say('toastSkip');
+    if(history.state&&history.state.sheet&&location.hash!==dest)location.replace(dest);else go(dest);return}
   if(a==='toast'){say(b);render();return}
   if(a==='done'){if(S.slam)return;const s=stepById(b);if(blockers(s).length)return;const before=starsOf(score());S.touched=1;S.done[b]=S.day;delete SK()[b];
     if(s.cat&&S.picks[b]){const p=P[s.cat].find(x=>x.id===S.picks[b]);if(p&&p.mo)S.extra.push({n:p.n,mo:p.mo})}
@@ -399,7 +411,11 @@ document.addEventListener('click',e=>{
 document.addEventListener('input',e=>{const el=e.target;
   if(el.id==='own'){OWN[el.dataset.step]=el.value;save();const k=$('#confirm .btn');if(k){const ok=!!el.value.trim();k.disabled=!ok;k.textContent=ok?t('confirmPick'):t('pickFirst')}}
   if(el.id==='cap'||el.id==='capn'){const O=S._ob;O.capital=Math.max(10000,Math.min(5000000,+el.value||0));if(el.id==='cap')$('#capn').value=O.capital;else $('#cap').value=Math.min(1000000,O.capital);save()}});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.target.matches('[role=link]'))e.target.click()});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.target.matches('[role=link]'))e.target.click();
+  const sh=$('#app .sheet');if(!sh)return;
+  if(e.key==='Escape'){e.preventDefault();closeSheet();return}
+  if(e.key==='Tab'){const f=[...sh.querySelectorAll('a[href],button:not([disabled])')];if(!f.length)return;const a=document.activeElement,first=f[0],last=f[f.length-1];
+    if(e.shiftKey&&(a===first||a===sh||!sh.contains(a))){e.preventDefault();last.focus()}else if(!e.shiftKey&&(a===last||!sh.contains(a))){e.preventDefault();first.focus()}}});
 /* after a move to another screen: start at the top and put focus on its heading, so a screen reader announces where the judge landed */
 function focusHead(){const el=$('#app .unlock')||$('#app h1')||$('#app .dayhead');if(!el)return;el.setAttribute('tabindex','-1');try{el.focus({preventScroll:true})}catch(e){el.focus()}}
 /* TRAIL mirrors the tab's history so "back" can be told from "forward": back restores the scroll position, forward starts at the top */

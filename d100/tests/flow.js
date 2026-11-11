@@ -96,6 +96,16 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
   await pg.goto(f + '#/step/s9'); await pg.reload(); await pg.waitForSelector('#app .bar .back'); await ww(150); await pg.click('#app .bar .back'); await ww(250); const h4 = await hh(); await pg.goBack(); await ww(250); const h5 = await hh();
   ok('G09', ys === 0 && h1 === '#/roadmap' && Math.abs(y1 - y0) < 3 && h2 !== hs, 'in-app Back: plan reopens at ' + y1 + ' (was ' + y0 + '); phone back then goes to ' + h2 + ', not ' + hs);
   ok('G09', h3 === '#/roadmap' && Math.abs(y3 - y0) < 3, 'phone back: plan reopens at ' + y3 + ' (was ' + y0 + ')'); ok('G09', h4 === '#/roadmap' && !h5.includes('step/s9'), 'Back after a refresh on a step goes to the plan and does not leave the step behind it in history (' + h5 + ')'); await pg.context().close(); }
+// G10 sheets are dialogs: role, focus in and trapped, Escape and the phone's back button close them, the page behind does not scroll
+for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'], ['programme sheet', '#/programmes', '#app .prog .btn >> nth=0']]) { const pg = await fresh({ viewport: { width: 320, height: 568 } }, '#/roadmap'); const ww = ms => pg.waitForTimeout(ms);
+  await pg.goto(f + route); await ww(150); const h0 = await pg.evaluate(() => location.hash); await pg.click(openSel); await ww(200);
+  const a = await pg.evaluate(() => { const sh = document.querySelector('#app .sheet'), v = document.querySelector('#app .view'); const moved = getComputedStyle(v).overflowY !== 'hidden'; return { role: sh.getAttribute('role'), modal: sh.getAttribute('aria-modal'), named: !!document.getElementById(sh.getAttribute('aria-labelledby')), focus: sh.contains(document.activeElement), moved, inert: v.hasAttribute('inert') }; });
+  for (let i = 0; i < 7; i++) await pg.keyboard.press('Tab'); const trapped = await pg.evaluate(() => document.querySelector('#app .sheet').contains(document.activeElement));
+  await pg.keyboard.press('Escape'); await ww(250); const esc = await pg.evaluate(() => ({ open: !!document.querySelector('#app .sheet'), h: location.hash, f: (document.activeElement.textContent || '').trim().slice(0, 12) }));
+  await pg.click(openSel); await ww(200); await pg.goBack(); await ww(250); const bk = await pg.evaluate(() => ({ open: !!document.querySelector('#app .sheet'), h: location.hash }));
+  await pg.goBack(); await ww(250); const bk2 = await pg.evaluate(() => location.hash);
+  ok('G10', a.role === 'dialog' && a.modal === 'true' && a.named && a.focus && trapped && !a.moved && a.inert, nm + ': role=dialog, labelled, focus inside and trapped, page behind inert and not scrolling');
+  ok('G10', !esc.open && esc.h === h0 && !bk.open && bk.h === h0 && bk2 === '#/roadmap', nm + ': Escape closes it (focus back on "' + esc.f + '"); phone back closes it and stays on ' + bk.h + '; one more back leaves to ' + bk2); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
