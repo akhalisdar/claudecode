@@ -72,6 +72,10 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
 { const pg = await fresh({ viewport: { width: 320, height: 568 } }, '#/step/s9'); const r = await pg.evaluate(() => { const v = document.querySelector('#app .view'), bar = document.querySelector('#confirm'), tabs = document.querySelector('#app .tabs'); const res = [];
     for (const pos of [0, 1e5]) { v.scrollTop = pos; for (const b2 of bar.querySelectorAll('button')) { const q = b2.getBoundingClientRect(), h = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); res.push(q.top >= v.getBoundingClientRect().bottom - 1 && q.bottom <= tabs.getBoundingClientRect().top + 1 && b2.contains(h)); } } return { inView: v.contains(bar), all: res.every(Boolean), n: res.length }; });
   ok('G13', !/\.sticky\{/.test(code) && !r.inView && r.all && r.n === 4 && /\.actions\.end\{[^}]*safe-area-inset-bottom/.test(code), 'action bar sits outside the scroller; main button and Skip fully visible at top and bottom of the scroll at 320x568'); await pg.context().close(); }
+// G06 landing: the main button is on the first screen on the smallest phones, in both languages; the licence card stays compact at 320px
+{ const res = []; for (const [vw, vh] of [[320, 568], [390, 664]]) for (const l of ['en', 'ar']) { const pg = await fresh({ viewport: { width: vw, height: vh } }, '#/landing?lang=' + l);
+    res.push(vw + ' ' + l + ' ' + await pg.evaluate(() => { const b2 = document.querySelector('#app [data-act=begin]'), q = b2.getBoundingClientRect(), h = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); const lv = document.querySelectorAll('#app .lic-r .lv')[1].getBoundingClientRect().height; return (q.top >= 0 && q.bottom <= innerHeight && b2.contains(h) ? 'ok' : 'cut at ' + Math.round(q.top) + '..' + Math.round(q.bottom) + ' of ' + innerHeight) + (lv > 76 ? ' trade name ' + Math.round(lv) + 'px tall' : ''); })); await pg.context().close(); }
+  ok('G06', res.every(x => x.endsWith(' ok')), 'landing main button fully on the first screen: ' + res.join(', ')); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

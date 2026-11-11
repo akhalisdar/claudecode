@@ -331,6 +331,14 @@ h2.sk{color:var(--due)}
   #shots{padding:18px 14px 40px}
   .shots-grid{justify-content:center}
 }
+@media (max-width:359px){
+  /* iPhone SE and other 320px screens: give the licence value column room so the trade name does not wrap to seven lines */
+  .hl{font-size:33px;margin-top:18px}
+  [dir=rtl] .hl{font-size:30px}
+  .lic{padding:12px}
+  .lic-r{grid-template-columns:54px 1fr 54px;gap:6px}
+  .lic-r .lv{font-size:11.5px}
+}
 @media (min-width:900px){
   #pitch .hl{font-size:46px;margin-top:22px}
   [dir=rtl] #pitch .hl{font-size:38px}

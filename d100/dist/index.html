@@ -336,6 +336,14 @@ h2.sk{color:var(--due)}
   #shots{padding:18px 14px 40px}
   .shots-grid{justify-content:center}
 }
+@media (max-width:359px){
+  /* iPhone SE and other 320px screens: give the licence value column room so the trade name does not wrap to seven lines */
+  .hl{font-size:33px;margin-top:18px}
+  [dir=rtl] .hl{font-size:30px}
+  .lic{padding:12px}
+  .lic-r{grid-template-columns:54px 1fr 54px;gap:6px}
+  .lic-r .lv{font-size:11.5px}
+}
 @media (min-width:900px){
   #pitch .hl{font-size:46px;margin-top:22px}
   [dir=rtl] #pitch .hl{font-size:38px}
@@ -826,15 +834,17 @@ function opt(p,stepId){const on=stepId&&S.picks[stepId]===p.id,lock=!stepId||S.d
   const inner=`<span class="rd"></span><b>${p.n}</b><span class="pr">${price}</span><span class="ds">${L(p.b)}</span><span class="mt"><span>${t('rating',{r:p.r.toFixed(1),n:p.j})}</span>${p.g?`<span class="g">${t('grad')} ${'★'.repeat(p.g)}</span>`:''}<span class="mr">${t('proRate')}</span></span>`;
   return lock?`<div class="opt${on?' on':''}${stepId?'':' flat'}">${inner}</div>`:`<button class="opt" role="radio" aria-checked="${!!on}" data-act="pick:${stepId}:${p.id}">${inner}</button>`}
 const whyText=s=>L(s.w).replace('{ct}',dateAt(1,3));
-function landBody(){return `<h1 class="hl"><span>${t('h1a')}</span> <span>${t('h1b')}</span></h1><p class="lede">${t('lede')}</p>${licence()}
-  <div class="cta"><a class="btn" href="#/roadmap" data-act="begin">${t('start')}</a><a class="link" href="#/start">${t('own')}</a></div>
+/* pinned: the phone landing page pins the main button in the action bar, so only the second link stays in the flow */
+function landBody(pinned){return `<h1 class="hl"><span>${t('h1a')}</span> <span>${t('h1b')}</span></h1><p class="lede">${t('lede')}</p>${licence()}
+  <div class="cta">${pinned?'':`<a class="btn" href="#/roadmap" data-act="begin">${t('start')}</a>`}<a class="link" href="#/start">${t('own')}</a></div>
   <h2>${t('datesT')}</h2><div class="dates">${[[14,'dt1','dc1',0],[45,'dt2','dc2',0],[90,'dt3','dc3',1]].map(d=>`<div><b class="num"><span class="dk">${t('dayK')}</span>${d[0]}</b><span><strong>${t(d[1])}</strong><small class="${d[3]?'r':''}">${t(d[2])}</small></span></div>`).join('')}</div>
   <h2 class="looph">${t('loopT')}</h2><ol class="loop"><li><b>1</b>${t('loop1')}</li><li><b>2</b>${t('loop2')}</li><li><b>3</b>${t('loop3')}</li></ol>
   <div class="proof"><span>${t('proof1')}</span><span>${t('proof3')}</span><span>${t('partners')}</span></div>${LOGOS.cbd?`<div class="byc"><img src="${LOGOS.cbd}" alt="Commercial Bank of Dubai"><span>${t('byCbd')}</span></div>`:''}`}
 
 /* ---------- screens ---------- */
 const SC={
-landing(){return `<div class="proto">${t('proto')}</div><div class="land"><div class="top"><span class="wm">D100</span>${langBtn()}</div>${landBody()}</div>`},
+landing(){return `<div class="proto">${t('proto')}</div><main class="land"><div class="top"><span class="wm">D100</span>${langBtn()}</div>${landBody(1)}</main>
+  <div class="actions end"><a class="btn" href="#/roadmap" data-act="begin">${t('start')}</a></div>`},
 
 start(){const O=S._ob||(S._ob={licence:'mainland',activity:'cafe',emirati:true,capital:150000,biz:''});
   const r=(k,v,l,s,dis)=>dis?`<div class="opt" style="color:var(--ink2)"><span class="rd" style="border-color:var(--ink2)"></span><b style="font-weight:500">${l}</b><span class="ds" style="color:var(--ink2)">${s}</span></div>`
