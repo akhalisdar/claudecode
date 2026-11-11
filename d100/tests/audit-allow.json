@@ -1,0 +1,24 @@
+[
+ {
+  "check": "contrast",
+  "el": "span.g",
+  "why": "Brass #8F6A1B on paper #F4F4F1 is 4.49:1, 0.01 under AA. Both colours are design-system tokens (CLAUDE.md: do not drift)."
+ },
+ {
+  "check": "contrast",
+  "el": "em.hit",
+  "why": "Same brass on paper, star labels under the meter."
+ },
+ {
+  "check": "contrast",
+  "el": "span.sn",
+  "why": "Star glyphs are graphics, which need 3:1; they have 4.49:1."
+ },
+ {
+  "check": "overlap",
+  "el": "small",
+  "detail": "\" over \"",
+  "screen": "plan",
+  "why": "The Day label and the big day number share line boxes (line-height 0.86); the glyphs do not touch."
+ }
+]

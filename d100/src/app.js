@@ -52,6 +52,8 @@ Object.assign(TX.ar,{
 });
 
 const rtl=()=>lang==='ar';
+/* desktop stage (pitch + phone frame) needs width and height; anything else gets the phone layout. Keep in step with the media queries in head.html. */
+const WIDE='(min-width:900px) and (min-height:640px)';
 /* first sentence splitter. No regex lookbehind: Safari before iOS 16.4 cannot parse one. */
 const sents=s=>{const o=[];let a=0;for(let i=0;i<s.length-1;i++)if('.!؟'.indexOf(s[i])>-1&&/\s/.test(s[i+1])){o.push(s.slice(a,i+1));a=i+2}o.push(s.slice(a));return o};
 const plus=n=>'<bdi dir="ltr">+'+n+'</bdi>';
@@ -355,7 +357,7 @@ function render(){
   if(r.q.get('s')==='skip'&&!S.done.s7)SK().s7=S.day;
   if(r.q.get('s')==='warn')S.warn=r.arg||'s7';}
   document.documentElement.lang=lang;document.documentElement.dir=rtl()?'rtl':'ltr';
-  wide=matchMedia('(min-width:900px)').matches;sid=0;
+  wide=matchMedia(WIDE).matches;sid=0;
   const app=$('#app');app.dir=rtl()?'rtl':'ltr';
   if(r.name==='shots'){document.body.classList.add('is-shots');shots();return}
   document.body.classList.remove('is-shots');
@@ -452,7 +454,7 @@ const keyOf=h=>{const r=parse(h);return r.name+(r.arg||'')};
 addEventListener('hashchange',()=>{const k=keyOf(),n=TRAIL.length;let back=goingBack;
   if(n>1&&TRAIL[n-2]===k){TRAIL.pop();back=true}else if(TRAIL[n-1]!==k)TRAIL.push(k);
   goingBack=back;render();if(!back){const v=$('#app .view')||$('#app .land');if(v)v.scrollTop=0}focusHead()});
-addEventListener('resize',()=>{const w=matchMedia('(min-width:900px)').matches;if(w!==wide)render()});
+addEventListener('resize',()=>{const w=matchMedia(WIDE).matches;if(w!==wide)render()});
 /* first visit: a phone set to Arabic opens in Arabic. A saved choice or ?lang= in the link wins. */
 if(!load()&&/^ar\b/i.test(navigator.language||''))lang='ar';
 TRAIL.push(keyOf());

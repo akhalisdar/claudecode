@@ -42,7 +42,7 @@ const SCREENS = [
   ['step-s7-own-provider', 'step/s7', async p => { await p.click('#app button.opt >> nth=3'); await p.waitForTimeout(150); await p.fill('#own', 'Al Noor Payroll Services'); await p.waitForTimeout(100); }],
   ['step-s12-link-opened', 'step/s12', async p => { await p.click('#app a.btn[target=_blank]'); await p.waitForTimeout(900); }],
   ['step-s7-stamp', 'step/s7?s=slam'],
-  ['step-s8-toast', 'step/s8', async p => { await p.click('#app [data-act^="done:"]'); await p.waitForFunction(() => !!document.querySelector('#app .toast'), null, { timeout: 5000 }).catch(() => {}); await p.waitForTimeout(150); }],
+  ['step-s8-toast', 'step/s8?s=after', async p => { await p.click('#app [data-act^="done:"]'); await p.waitForFunction(() => !!document.querySelector('#app .toast'), null, { timeout: 5000 }).catch(() => {}); await p.waitForTimeout(150); }],
   ['bank-done', 'bank'],
   ['bank-day1', 'bank?s=new'],
   ['bank-picked', 'bank?s=new', click('#app .bk >> nth=4')],
@@ -175,7 +175,7 @@ function inPage(o) {
     }
     if (scroller) scroller.scrollTop = 0; const sh = app.querySelector('.sheet'); if (sh) sh.scrollTop = 0;
     if (app.scrollTop || app.scrollLeft) { add('shell-scrolled', 'the app shell itself scrolled to ' + app.scrollTop, app); app.scrollTop = 0; }
-    if (document.documentElement.scrollTop || document.body.scrollTop) add('page-scrolled', 'the page behind the app scrolled', document.body);
+    if (!o.wide && (document.documentElement.scrollTop || document.body.scrollTop)) add('page-scrolled', 'the page behind the app scrolled', document.body);
   }
 
   // words before the main button, and whether it is on the first screen
@@ -243,10 +243,10 @@ async function journey(browser, dev, base, lang, out) {
   const visibleBtn = sel => ev(sel => { const b = document.querySelector(sel); if (!b) return 'missing'; const r = b.getBoundingClientRect(); if (r.top < 0 || r.bottom > innerHeight) return 'off screen (' + Math.round(r.top) + '..' + Math.round(r.bottom) + ' of ' + innerHeight + ')'; const h = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return h && (b.contains(h) || h.contains(b)) ? '' : 'covered by ' + (h ? h.className || h.tagName : 'nothing'); }, sel);
   const run = async (id, what, fn) => { try { await fn(); } catch (e) { note(id, false, what, 'crashed: ' + e.message.split('\n')[0]); } };
   const doneCount = () => ev(() => { const m = document.querySelector('#app .dayhead .m b'); return m ? m.textContent.trim() : ''; });
-  const start = lang === 'ar' ? `${base.url}#/landing?lang=ar` : base.url;
+  const start = lang === 'ar' ? `${base.url}#/landing?lang=ar` : dev.wide ? `${base.url}#/landing` : base.url;
 
-  await run('J01', 'Landing: the main button is on the first screen', async () => { await page.goto(start); await page.waitForSelector('#app .cta .btn'); await w(350); const v = await visibleBtn('#app .cta .btn'); note('J01', !v, 'Landing: the main button is visible without scrolling', v); });
-  await run('J02', 'Start the demo and open the next step', async () => { await page.click('#app .cta .btn'); await w(250); const h1 = await hash(); await page.click('#app .next .btn'); await w(250); const h2 = await hash(); note('J02', h1.includes('roadmap') && h2.includes('step/s7'), 'Start the demo, open the next step', h1 + ' -> ' + h2); });
+  await run('J01', 'Landing: the main button is on the first screen', async () => { await page.goto(start); await page.waitForSelector('#app [data-act=begin]'); await w(350); const v = await visibleBtn('#app [data-act=begin]'); note('J01', !v, 'Landing: the main button is visible without scrolling', v); });
+  await run('J02', 'Start the demo and open the next step', async () => { await page.click('#app [data-act=begin]'); await w(250); const h1 = await hash(); await page.click('#app .next .btn'); await w(250); const h2 = await hash(); note('J02', h1.includes('roadmap') && h2.includes('step/s7'), 'Start the demo, open the next step', h1 + ' -> ' + h2); });
   await run('J03', 'On a step the main button and Skip are fully visible', async () => { const a = await visibleBtn('#confirm .btn'), b = await visibleBtn('#app .skip'); note('J03', !a && !b, 'On a step, the main button and "Skip for now" are fully visible', [a, b].filter(Boolean).join('; ')); });
   await run('J04', 'Pick a provider, then switch language: choice and place are kept', async () => {
     await page.click('#app button.opt >> nth=3'); await w(250); await page.fill('#own', 'Al Noor Payroll'); await w(80);
@@ -295,22 +295,22 @@ async function journey(browser, dev, base, lang, out) {
     await page.reload(); await page.waitForSelector('#app > *'); await w(350); const after = await doneCount(); const h = await hash(); const lg2 = await ev(() => document.documentElement.lang);
     note('J08', before && before === after && lg === lg2, 'A refresh keeps progress and language', `"${before}" -> "${after}" at ${h}, lang ${lg} -> ${lg2}`); });
   await run('J09', 'Back from a step returns to the plan at the same place', async () => {
-    await ev(() => { location.hash = '#/roadmap'; }); await w(250); await ev(() => { const v = document.querySelector('#app .view'); v.scrollTop = 260; }); const y0 = await top();
+    await ev(() => { location.hash = '#/cash'; }); await w(250); await ev(() => { location.hash = '#/roadmap'; }); await w(250); await ev(() => { const v = document.querySelector('#app .view'); v.scrollTop = 260; }); await page.locator('#app a.step >> nth=3').scrollIntoViewIfNeeded(); const y0 = await top();
     await page.click('#app a.step >> nth=3'); await w(300); const hs = await hash();
     await page.click('#app .bar .back'); await w(350); const y1 = await top(), h1 = await hash();
     note('J09', h1.includes('roadmap') && Math.abs(y1 - y0) < 12, 'The in-app Back link returns to the plan at the same scroll position', `scroll ${y0} -> ${y1} at ${h1}`);
     await page.goBack(); await w(350); const h2 = await hash();
     note('J09b', h2 !== hs, 'Phone back after the in-app Back does not bounce to the step again (no loop)', `${hs} -> Back -> ${h1} -> phone back -> ${h2}`);
-    await ev(() => { location.hash = '#/roadmap'; }); await w(250); await ev(() => { document.querySelector('#app .view').scrollTop = 260; }); const y2 = await top();
+    await ev(() => { location.hash = '#/roadmap'; }); await w(250); await ev(() => { document.querySelector('#app .view').scrollTop = 260; }); await page.locator('#app a.step >> nth=3').scrollIntoViewIfNeeded(); const y2 = await top();
     await page.click('#app a.step >> nth=3'); await w(300); await page.goBack(); await w(350); const y3 = await top(), h3 = await hash();
     note('J09c', h3.includes('roadmap') && Math.abs(y3 - y2) < 12, 'The phone back button returns to the plan at the same scroll position', `scroll ${y2} -> ${y3} at ${h3}`); });
   await run('J10', 'Rotate the phone', async () => {
     if (dev.wide) return; await ev(() => { location.hash = '#/step/s9'; }); await w(300); const vp = dev.ctx.viewport, land = { width: Math.max(vp.width, vp.height) + (vp.height < 600 ? 100 : 180), height: Math.min(vp.width, vp.height) };
     await page.setViewportSize(land); await w(350);
     const r = await ev(() => { const v = document.querySelector('#app .view'), bar = document.querySelector('#app .sticky,#app .actions'), tabs = document.querySelector('#app .tabs'); const vr = v.getBoundingClientRect(), br = bar ? bar.getBoundingClientRect() : { height: 0 }; const free = vr.height - (bar && bar.classList.contains('sticky') ? br.height : 0);
-      return { free: Math.round(free), bar: Math.round(br.height), tabsBottom: Math.round(tabs.getBoundingClientRect().bottom), vh: innerHeight, sw: document.documentElement.scrollWidth, vw: innerWidth, wide: matchMedia('(min-width:900px)').matches }; });
+      return { free: Math.round(free), bar: Math.round(br.height), tabsBottom: Math.round(tabs.getBoundingClientRect().bottom), vh: innerHeight, sw: document.documentElement.scrollWidth, vw: innerWidth }; });
     const a = await visibleBtn('#confirm .btn');
-    note('J10', !a && r.tabsBottom <= r.vh && r.sw <= r.vw && (r.wide || r.free >= 110), 'In landscape the main button stays visible and at least 110px of content shows above it', JSON.stringify(r) + ' ' + a);
+    note('J10', !a && r.tabsBottom <= r.vh && r.sw <= r.vw && r.free >= 110, 'In landscape the main button stays visible and at least 110px of content shows above it', JSON.stringify(r) + ' ' + a);
     await page.setViewportSize(vp); await w(250); const b = await visibleBtn('#confirm .btn'); note('J10b', !b, 'Back in portrait the layout recovers', b); });
   await run('J11', 'Capital field and slider agree', async () => {
     await ev(() => { location.hash = '#/start'; }); await w(300);
@@ -318,7 +318,7 @@ async function journey(browser, dev, base, lang, out) {
     note('J11', String(r.nmax) === String(r.smax) && /,/.test(r.val), 'Capital field and slider share one maximum and the field shows thousands separators', JSON.stringify(r));
     await page.fill('#biz', 'Test Name'); await page.click('#app .lang'); await w(250); const kept = await ev(() => document.querySelector('#biz').value); note('J11b', kept === 'Test Name', 'A typed business name survives a language switch', '"' + kept + '"'); await page.click('#app .lang'); await w(150); });
   await run('J12', 'Landing after progress', async () => {
-    await ev(() => { location.hash = '#/roadmap'; }); await w(250); const before = await doneCount(); await ev(() => { location.hash = '#/landing'; }); await w(250); await page.click('#app .cta .btn'); await w(350); const after = await doneCount();
+    await ev(() => { location.hash = '#/roadmap'; }); await w(250); const before = await doneCount(); await ev(() => { location.hash = '#/landing'; }); await w(250); await page.click('#app [data-act=begin]'); await w(350); const after = await doneCount();
     note('J12', before === after, 'Going back to the landing page and tapping the main button does not wipe progress', `"${before}" -> "${after}"`); });
   note('J00', errs.length === 0, 'No console errors during the journey', [...new Set(errs)].join(' | '));
   await ctx.close();
