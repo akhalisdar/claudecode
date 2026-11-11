@@ -272,7 +272,7 @@ details.donelist[open] summary::after{content:"\2013"}
 .tier li .ico{width:17px;height:17px;margin-top:3px;stroke-width:2.2}
 .tier.em{border:1.5px solid var(--ink);border-radius:10px;background:var(--sheet);padding:14px 16px 16px;margin-top:6px}
 
-.toast{position:absolute;inset-inline:18px;bottom:76px;background:var(--ink);color:#fff;border-radius:8px;padding:12px 14px;font-size:14px;z-index:6;animation:rise .25s both;text-align:center}
+.toast{flex:none;margin:0 18px 8px;background:var(--ink);color:#fff;border-radius:8px;padding:12px 14px;font-size:14px;animation:rise .25s both;text-align:center}
 
 /* ---------- all screens ---------- */
 #shots{display:none;padding:28px 28px 60px;min-height:100%}
@@ -817,7 +817,7 @@ const sub=(label,back)=>`<header class="bar"><a class="back" href="#/${back||'mo
 function tabs(on){const T=[['roadmap','tRoad',I.plan],['cash','tCash',I.cash],['stars','tStars',I.rec],['market','tMarket',I.prov],['more','tMore',I.more]];
   return `<nav class="tabs">${T.map(x=>`<a href="#/${x[0]}" class="${on===x[0]?'on':''}" ${on===x[0]?'aria-current="page"':''}>${x[2]}<span>${t(x[1])}</span></a>`).join('')}</nav>`}
 /* foot = the action bar. It sits outside the scroller, between the view and the tab bar, so the main button and Skip are always fully on screen. */
-const shell=(head,body,tab,foot)=>`<div class="proto">${t('proto')}</div>${head}<main class="view">${body}</main>${foot?`<div class="actions" id="confirm">${foot}</div>`:''}${tabs(tab)}`;
+const shell=(head,body,tab,foot)=>`<div class="proto">${t('proto')}</div>${head}<main class="view">${body}</main>${toast?`<div class="toast" role="status">${toast}</div>`:''}${foot?`<div class="actions" id="confirm">${foot}</div>`:''}${tabs(tab)}`;
 const when=n=>n<0?t('late',{n:-n}):n===0?t('today'):t('inDays',{n});
 function stText(s){
   if(S.done[s.id])return `<span class="st ok">${t('stDone',{d:S.done[s.id]})}</span>`;
@@ -1011,7 +1011,7 @@ function render(){
   if(name!=='stars'&&name!=='cash')S.unlock=0;
   const key=name+(r.arg||''),old=$('.view',app)||$('.land',app),keep=app.dataset.route===key&&old?old.scrollTop:0;
   const open=app.dataset.route===key&&$('details.donelist',app)&&$('details.donelist',app).open;
-  app.innerHTML=html(name,r.arg)+(S.slam?`<div class="slam">${doneStamp(S.slam.day)}</div>`:'')+(toast?`<div class="toast" role="status">${toast}</div>`:'');
+  app.innerHTML=html(name,r.arg)+(S.slam?`<div class="slam">${doneStamp(S.slam.day)}</div>`:'');
   app.dataset.route=key;
   const v=$('.view',app)||$('.land',app);if(v&&keep)v.scrollTop=keep;
   if(open){const d=$('details.donelist',app);if(d)d.open=true}
@@ -1020,7 +1020,8 @@ function render(){
 function shots(){const el=$('#shots');el.dir=rtl()?'rtl':'ltr';
   el.innerHTML=`<header><h1>${t('shotsT')}</h1><div class="cta"><button class="link" data-act="lang">${t('other')}</button><a class="btn" href="#/">${t('backApp')}</a></div></header>
   <div class="shots-grid">${ORDER.map((n,i)=>`<div class="shot"><div class="shot-frame" role="link" tabindex="0" data-act="open:${n==='step'?'step/s7':n}" aria-label="${t('n_'+n)}"><div class="app" dir="${rtl()?'rtl':'ltr'}">${html(n,'s7')}</div></div><p dir="${rtl()?'rtl':'ltr'}">${i+1}. ${t('n_'+n)}</p></div>`).join('')}</div>`}
-function say(k){toast=t(k);clearTimeout(toastT);toastT=setTimeout(()=>{toast=null;render()},2600)}
+/* the toast is a row of the shell above the action bar, so it cannot cover a button. It is removed in place: a re-render would drop focus and close the keyboard. */
+function say(k){toast=t(k);clearTimeout(toastT);toastT=setTimeout(()=>{toast=null;const el=$('#app .toast');if(el)el.remove()},2600)}
 function go(h){if(location.hash===h)render();else location.hash=h}
 
 document.addEventListener('click',e=>{

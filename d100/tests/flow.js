@@ -76,6 +76,12 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
 { const res = []; for (const [vw, vh] of [[320, 568], [390, 664]]) for (const l of ['en', 'ar']) { const pg = await fresh({ viewport: { width: vw, height: vh } }, '#/landing?lang=' + l);
     res.push(vw + ' ' + l + ' ' + await pg.evaluate(() => { const b2 = document.querySelector('#app [data-act=begin]'), q = b2.getBoundingClientRect(), h = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); const lv = document.querySelectorAll('#app .lic-r .lv')[1].getBoundingClientRect().height; return (q.top >= 0 && q.bottom <= innerHeight && b2.contains(h) ? 'ok' : 'cut at ' + Math.round(q.top) + '..' + Math.round(q.bottom) + ' of ' + innerHeight) + (lv > 76 ? ' trade name ' + Math.round(lv) + 'px tall' : ''); })); await pg.context().close(); }
   ok('G06', res.every(x => x.endsWith(' ok')), 'landing main button fully on the first screen: ' + res.join(', ')); }
+// G07 the toast never covers a button, and when it goes it does not take focus or the typed text with it
+{ const pg = await fresh(null, '#/step/s8?s=after'); await pg.click('#confirm [data-act^="done:"]'); await pg.waitForSelector('#app .toast', { timeout: 6000 }); await pg.waitForTimeout(100);
+  const hit = await pg.evaluate(() => { const t = document.querySelector('#app .toast').getBoundingClientRect(), vb = document.querySelector('#app .view').getBoundingClientRect().bottom; return [...document.querySelectorAll('#app button,#app a')].filter(e => { const r = e.getBoundingClientRect(), bot = e.closest('.view') ? Math.min(r.bottom, vb) : r.bottom; return r.width && r.left < t.right && r.right > t.left && r.top < t.bottom && bot > t.top; }).map(e => e.textContent.trim().slice(0, 20)); });
+  await pg.click('#app button.opt >> nth=3'); await pg.waitForTimeout(100); await pg.type('#own', 'Al Noor'); await pg.waitForFunction(() => !document.querySelector('#app .toast'), null, { timeout: 6000 }); await pg.waitForTimeout(100);
+  const af = await pg.evaluate(() => ({ id: document.activeElement.id, v: (document.querySelector('#own') || {}).value }));
+  ok('G07', hit.length === 0 && af.id === 'own' && af.v === 'Al Noor', 'toast covers nothing' + (hit.length ? ' (covers ' + hit.join(', ') + ')' : '') + '; after it goes, focus is still on #' + af.id + ' with "' + af.v + '"'); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
