@@ -68,6 +68,10 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
   await pg.goto(f + '#/more'); await ww(150); await pg.click('#app [data-act=reset]'); await ww(250); const d2 = await cnt(); await pg.reload(); await pg.waitForSelector('#app .dayhead'); await ww(150); const e2 = await cnt();
   ok('G05', /^7 /.test(a) && bb === a && st.dir === 'rtl' && st.key === 'd100:v1' && /7/.test(bAr), 'refresh keeps progress ("' + a + '" -> "' + bb + '") and language (' + st.lang + ') under key ' + st.key);
   ok('G05', c2 === a, 'the landing button keeps progress: "' + c2 + '"'); ok('G05', /^6 /.test(d2) && e2 === d2, 'Reset in More goes back to Layla day 37 and stays there after a refresh: "' + e2 + '"'); await pg.context().close(); }
+// G13 the action bar is a row of the shell (no sticky hack) and its buttons are fully on screen at any scroll position
+{ const pg = await fresh({ viewport: { width: 320, height: 568 } }, '#/step/s9'); const r = await pg.evaluate(() => { const v = document.querySelector('#app .view'), bar = document.querySelector('#confirm'), tabs = document.querySelector('#app .tabs'); const res = [];
+    for (const pos of [0, 1e5]) { v.scrollTop = pos; for (const b2 of bar.querySelectorAll('button')) { const q = b2.getBoundingClientRect(), h = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); res.push(q.top >= v.getBoundingClientRect().bottom - 1 && q.bottom <= tabs.getBoundingClientRect().top + 1 && b2.contains(h)); } } return { inView: v.contains(bar), all: res.every(Boolean), n: res.length }; });
+  ok('G13', !/\.sticky\{/.test(code) && !r.inView && r.all && r.n === 4 && /\.actions\.end\{[^}]*safe-area-inset-bottom/.test(code), 'action bar sits outside the scroller; main button and Skip fully visible at top and bottom of the scroll at 320x568'); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

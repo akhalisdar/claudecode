@@ -154,7 +154,8 @@ const bar=()=>`<header class="bar"><a class="wm" href="#/">D100</a><span class="
 const sub=(label,back)=>`<header class="bar"><a class="back" href="#/${back||'more'}">${I.back}<span>${label}</span></a>${langBtn()}</header>`;
 function tabs(on){const T=[['roadmap','tRoad',I.plan],['cash','tCash',I.cash],['stars','tStars',I.rec],['market','tMarket',I.prov],['more','tMore',I.more]];
   return `<nav class="tabs">${T.map(x=>`<a href="#/${x[0]}" class="${on===x[0]?'on':''}" ${on===x[0]?'aria-current="page"':''}>${x[2]}<span>${t(x[1])}</span></a>`).join('')}</nav>`}
-const shell=(head,body,tab)=>`<div class="proto">${t('proto')}</div>${head}<main class="view">${body}</main>${tabs(tab)}`;
+/* foot = the action bar. It sits outside the scroller, between the view and the tab bar, so the main button and Skip are always fully on screen. */
+const shell=(head,body,tab,foot)=>`<div class="proto">${t('proto')}</div>${head}<main class="view">${body}</main>${foot?`<div class="actions" id="confirm">${foot}</div>`:''}${tabs(tab)}`;
 const when=n=>n<0?t('late',{n:-n}):n===0?t('today'):t('inDays',{n});
 function stText(s){
   if(S.done[s.id])return `<span class="st ok">${t('stDone',{d:S.done[s.id]})}</span>`;
@@ -191,8 +192,8 @@ start(){const O=S._ob||(S._ob={licence:'mainland',activity:'cafe',emirati:true,c
   <fieldset><legend>${t('q3')}</legend><div class="opts" role="radiogroup">${r('emirati',true,t('q3a'))}${r('emirati',false,t('q3b'))}</div></fieldset>
   <fieldset><legend>${t('q4')}</legend><input id="capn" type="number" inputmode="numeric" min="10000" max="5000000" step="1000" value="${O.capital}" aria-label="${t('q4')}">
    <input id="cap" type="range" min="10000" max="1000000" step="5000" value="${Math.min(1000000,O.capital)}" aria-label="${t('q4')}"><div class="caprow num"><span>10,000</span><span>1,000,000</span></div></fieldset>
-  <fieldset><label class="lbl" for="biz">${t('q5')}</label><input id="biz" type="text" maxlength="40" autocomplete="off" placeholder="${DEF_BIZ}" value="${esc(O.biz)}"><p class="note">${t('obNote')}</p></fieldset>
-  <div class="sticky"><button class="btn" data-act="build">${t('build')}</button></div></main>`},
+  <fieldset><label class="lbl" for="biz">${t('q5')}</label><input id="biz" type="text" maxlength="40" autocomplete="off" placeholder="${DEF_BIZ}" value="${esc(O.biz)}"><p class="note">${t('obNote')}</p></fieldset></main>
+  <div class="actions end"><button class="btn" data-act="build">${t('build')}</button></div>`},
 
 building(){return `<div class="proto">${t('proto')}</div><div class="building"><div class="seal">${seal()}</div><p>${t('b1')}</p><p>${t('b2')}</p><p>${t('b3')}</p></div>`},
 
@@ -211,7 +212,7 @@ roadmap(){const st=steps(),nx=nextOpen(),done=st.filter(s=>S.done[s.id]),sk=st.f
 step(id){const st=steps(),s=stepById(id)||nextOpen()||st[0],dn=S.done[s.id],pv=s.cat?P[s.cat]:null,pk=S.picks[s.id],n=s.due-S.day,fine=s.fine?aed(s.fine):(s.fineTxt?L(s.fineTxt):''),
    lk=LINK[s.a],pre=blockers(s),w=sents(whyText(s)),own=pk==='own',okPick=pk&&(!own||(OWN[s.id]||'').trim()),seen=VIS[s.id];
   const learn=`<details class="learn"><summary>${t('learn')}</summary>${w.length>1?`<p>${w.slice(1).join(' ')}</p>`:''}<b>${t('need')}</b><ul>${s.d.map(x=>`<li>${L(x)}</li>`).join('')}</ul>${pv?`<p class="note">${t('sample')}</p>`:''}${s.soft?`<p class="note">${t('sampleStep')}</p>`:''}<p class="note">${t('pilotNote')}</p></details>`;
-  let h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:st.indexOf(s)+1,m:st.length})}</b>${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}${dn||s.auto?'':t('sep')+when(n).toLowerCase()}</p><h1>${L(s.t)}</h1>
+  let foot='',h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:st.indexOf(s)+1,m:st.length})}</b>${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}${dn||s.auto?'':t('sep')+when(n).toLowerCase()}</p><h1>${L(s.t)}</h1>
    <p class="body">${w[0]}</p>${fine?`<p class="risk">${t('missed')}: ${fine}</p>`:''}${!dn&&SK()[s.id]?`<p class="note">${t('skOn',{d:SK()[s.id]})}</p>`:''}`;
   if(dn){const nx=nextOpen();h+=`<p class="note">${t('doneOn',{d:dn})}${pk&&pv?t('sep')+esc(own?OWN[s.id]||'':(pv.find(p=>p.id===pk)||{}).n||''):''}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}${learn}`}
   else if(s.auto)h+=`<p class="note">${t('tracking')}</p>${learn}`;
@@ -220,17 +221,16 @@ step(id){const st=steps(),s=stepById(id)||nextOpen()||st[0],dn=S.done[s.id],pv=s
    if(pv)h+=`<h2>${t('choose')}</h2><div class="opts" role="radiogroup">${pv.map(p=>opt(p,s.id)).join('')}<button class="opt" role="radio" aria-checked="${own}" data-act="pick:${s.id}:own"><span class="rd"></span><b>${t('ownP')}</b></button></div>
      ${own?`<input id="own" data-step="${s.id}" type="text" maxlength="40" placeholder="${t('ownPh')}" value="${esc(OWN[s.id]||'')}" style="margin-top:10px">`:''}<p class="note">${t('rank')}</p>`;
    if(lk)h+=`<a class="btn${seen?' sec':''}" style="margin-top:18px" href="${lk}" target="_blank" rel="noopener" data-act="visit:${s.id}">${t('openSite',{n:L(A[s.a])})}${I.ext}</a><p class="note">${t('goesTo',{h:lk.replace(/^https?:\/\/(www\.)?/,'')})}</p>`;
-   h+=`${learn}<div class="sticky" id="confirm"><button class="btn${lk&&!seen?' sec':''}" data-act="done:${s.id}" ${pv&&!okPick?'disabled':''}>${pv?(okPick?t('confirmPick'):t('pickFirst')):(lk&&!seen?t('already'):t('iDid'))}</button>${skipBtn(s)}</div>`}
-  return shell(sub(t('tRoad'),'roadmap'),h,'roadmap')+skipSheet(s)},
+   h+=learn;foot=`<button class="btn${lk&&!seen?' sec':''}" data-act="done:${s.id}" ${pv&&!okPick?'disabled':''}>${pv?(okPick?t('confirmPick'):t('pickFirst')):(lk&&!seen?t('already'):t('iDid'))}</button>${skipBtn(s)}`}
+  return shell(sub(t('tRoad'),'roadmap'),h,'roadmap',foot)+skipSheet(s)},
 
 bank(){const st=steps(),dn=S.done.s2,pk=S.bankPick||'up',bk=BANKS.find(x=>x.id===pk)||BANKS[0],seen=VIS.s2,nx=nextOpen();
-  let h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:2,m:st.length})}</b>${t('sep')}${t('dueDay',{d:7}).toLowerCase()}</p><h1>${t('bankT')}</h1><p class="body">${L(st[1].w)}</p>${!dn&&SK().s2?`<p class="note">${t('skOn',{d:SK().s2})}</p>`:''}`;
+  let foot='',h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:2,m:st.length})}</b>${t('sep')}${t('dueDay',{d:7}).toLowerCase()}</p><h1>${t('bankT')}</h1><p class="body">${L(st[1].w)}</p>${!dn&&SK().s2?`<p class="note">${t('skOn',{d:SK().s2})}</p>`:''}`;
   if(dn)h+=`<p class="note">${t('bkDone',{d:dn})}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}`;
   else h+=`<div class="banks" role="radiogroup">${BANKS.map(x=>`<button class="bk" role="radio" aria-checked="${pk===x.id}" data-act="bankpick:${x.id}">${LOGOS[x.id]?`<img${x.id==='up'?' class="dk"':''} src="${LOGOS[x.id]}" alt="${x.n}">`:`<span class="mono">${x.m}</span><span>${x.n}</span>`}${x.rec?`<small>${t('recommended')}</small>`:''}</button>`).join('')}</div>
    <p class="note" style="margin-top:8px">${t('notPartners')}</p>${pk==='up'?`<ul class="plain">${['bk1','bk2','bk3'].map(k=>`<li>${t(k)}</li>`).join('')}</ul><p class="note">${t('propPartner')}. ${t('bkSrc')}</p>`:`<p class="note">${t('anyP')}</p>`}
-   <a class="btn${seen?' sec':''}" style="margin-top:16px" href="${bk.u}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bk.n})}${I.ext}</a><p class="note">${t('goesTo',{h:bk.u.replace(/^https?:\/\/(www\.)?/,'')})}</p>
-   <div class="sticky" id="confirm"><button class="btn${seen?'':' sec'}" data-act="done:s2">${seen?t('iDid'):t('already')}</button>${skipBtn(st[1])}</div>`;
-  return shell(sub(t('tRoad'),'roadmap'),h,'roadmap')+skipSheet(st[1])},
+   <a class="btn${seen?' sec':''}" style="margin-top:16px" href="${bk.u}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bk.n})}${I.ext}</a><p class="note">${t('goesTo',{h:bk.u.replace(/^https?:\/\/(www\.)?/,'')})}</p>`,foot=`<button class="btn${seen?'':' sec'}" data-act="done:s2">${seen?t('iDid'):t('already')}</button>${skipBtn(st[1])}`;
+  return shell(sub(t('tRoad'),'roadmap'),h,'roadmap',foot)+skipSheet(st[1])},
 
 cash(){const b=bal(S.day),m=monthly(),z=zeroDay(),up=ONEOFF.filter(o=>o.d>S.day),upSum=up.reduce((a,o)=>a+o.a,0),R=rtl();
   const W=354,H=168,px=d=>{const v=3+(d-1)/99*(W-6);return R?W-v:v},top=Math.max(S.capital,bal(100,true)),py=v=>24+(1-Math.max(0,v)/top)*(H-52);
@@ -372,7 +372,7 @@ document.addEventListener('click',e=>{
   if(a==='build'){const O=S._ob||{},i=$('#biz'),biz=(i&&i.value.trim())||DEF_BIZ;
     S=fresh({biz,activity:O.activity||'cafe',emirati:O.emirati!==false,capital:O.capital||150000,touched:1});CK={};VIS={};OWN={};go('#/building');return}
   if(a==='cat'){cat=b;render();return}
-  if(a==='pick'){S.touched=1;S.picks[b]=c;render();setTimeout(()=>{const o=$('#own'),k=$('#confirm');if(c==='own'&&o)o.focus();else if(k)k.scrollIntoView({behavior:'smooth',block:'end'})},40);return}
+  if(a==='pick'){S.touched=1;S.picks[b]=c;render();if(c==='own'){const o=$('#own');if(o)o.focus()}return}
   if(a==='visit'){S.touched=1;VIS[b]=1;save();setTimeout(render,400);return}
   if(a==='check'){CK[b]=!CK[b];render();return}
   if(a==='bankpick'){S.touched=1;S.bankPick=b;render();return}
