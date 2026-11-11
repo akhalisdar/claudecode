@@ -49,6 +49,9 @@ const fresh = async (opt, route) => { const cx = await mkctx(opt); const pg = wa
 await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
 { const one1 = one(await p.locator('#app .next p').innerText()); ok('G01', !/\(\?<[=!]/.test(code) && /^[^.]+\.$/.test(one1), 'no regex lookbehind; plan card shows one sentence: "' + one1 + '"');
   await p.goto(f + '#/step/s12?lang=ar'); await w(120); const ar1 = one(await p.locator('#app .view p.body').innerText()); ok('G01', /التأسيس ولو لم تبدأ نشاطها\.$/.test(ar1), 'Arabic first sentence splits at the full stop'); }
+// G02 screen height has a fallback for browsers without dvh, and the shell fills the screen exactly
+{ const h = await p.evaluate(() => { const d = document.querySelector('#device').getBoundingClientRect(), t = document.querySelector('#app .tabs').getBoundingClientRect(); return { d: d.height, tb: t.bottom, vh: innerHeight }; });
+  const css = code.match(/#device\{[^}]*height:100%;height:100dvh[^}]*\}/); ok('G02', !!css && !/height:100dvh/.test(code.replace(/height:100%;height:100dvh/g, '')) && Math.abs(h.d - h.vh) < 1 && h.tb <= h.vh + .5, 'every 100dvh has a 100% fallback; shell is ' + h.d + ' of ' + h.vh + 'px, tab bar ends at ' + h.tb); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
