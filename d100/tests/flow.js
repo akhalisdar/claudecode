@@ -130,6 +130,9 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
   const res = []; for (const l of ['en', 'ar']) { const pg = await fresh(null, '#/roadmap?lang=' + l);
     for (const r of ['landing', 'roadmap', 'step/s7', 'step/s9', 'step/s10', 'step/s12', 'step/s7?s=skip', 'stars?s=after', 'step/s3?s=new', 'bank?s=new']) { await pg.goto(`${f}#/${r}${r.includes('?') ? '&' : '?'}lang=${l}`); await pg.waitForTimeout(80); res.push([l + ' ' + r, await pg.evaluate(count)]); } await pg.context().close(); }
   const worst = res.slice().sort((a, b2) => b2[1] - a[1])[0]; ok('G15', res.every(x => x[1] >= 0 && x[1] <= 45), 'most words before a main button: ' + worst[1] + ' (' + worst[0] + '), over ' + res.length + ' screens'); }
+// G16 with Reduce Motion on, the three lines on the building screen are visible
+{ const pg = await fresh({ reducedMotion: 'reduce' }, '#/building'); const op = await pg.evaluate(() => [...document.querySelectorAll('#app .building p')].map(e => getComputedStyle(e).opacity).join(','));
+  ok('G16', op === '1,1,1', 'building screen lines have opacity ' + op + ' with reduced motion'); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

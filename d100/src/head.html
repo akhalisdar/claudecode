@@ -373,7 +373,8 @@ h2.sk{color:var(--due)}
 @media (min-width:900px) and (max-height:800px){
   #device{zoom:.72}
 }
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* the three lines on the building screen start hidden and are revealed by an animation: show them outright when motion is reduced */
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.building p{opacity:1}}
 </style>
 </head>
 <body>
