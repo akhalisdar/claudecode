@@ -123,6 +123,13 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
   await pg.fill('#capn', '5000000'); const v1 = await val(); await pg.fill('#capn', '\u0662\u0665\u0660\u0660\u0660\u0660'); const v2 = await val(); await pg.fill('#capn', '500'); await pg.locator('#biz').focus(); const v3 = await val();
   await pg.evaluate(() => { const s2 = document.querySelector('#cap'); s2.value = 300000; s2.dispatchEvent(new Event('input', { bubbles: true })); }); const v4 = await val(); await pg.click('[data-act=build]'); await pg.waitForFunction(() => location.hash.includes('roadmap'), null, { timeout: 6000 }); await pg.goto(f + '#/cash'); await pg.waitForTimeout(150); const bal = one(await pg.locator('#app .figs div >> nth=0').innerText());
   ok('G14', lim && v0 === '150,000 / 150000' && v1 === '1,000,000 / 1000000' && v2 === '250,000 / 250000' && v3 === '10,000 / 10000' && v4 === '300,000 / 300000' && /298,950/.test(bal), 'capital field and slider agree: ' + [v0, v1, v2, v3, v4].join(' | ') + ' -> ' + bal); await pg.context().close(); }
+// G15 no more than about 40 words of prose before the main button (choices, buttons and closed "Learn more" sections are not prose)
+{ const count = () => { const app = document.querySelector('#app'), btn = app.querySelector('.actions .btn,.next .btn,.unlock .btn'); if (!btn) return -1; const sc = app.querySelector('.view,.land'); const tw = document.createTreeWalker(sc, NodeFilter.SHOW_TEXT); let n = 0, m;
+    const stop = sc.contains(btn) ? btn : sc.querySelector('.cta'); // landing: the button is pinned; count what comes before the place it belongs to, the pitch below is optional reading
+    while ((m = tw.nextNode())) { if (stop && (stop.compareDocumentPosition(m) & Node.DOCUMENT_POSITION_FOLLOWING || stop.contains(m))) break; const e = m.parentElement; if (e.closest('svg,.lic,.opt,.bk,.step,.skip,.btn,.up,summary,[role=radio],.dl,.dayhead') || e.closest('details:not([open])')) continue; n += (m.nodeValue.match(/\S+/g) || []).length; } return n; };
+  const res = []; for (const l of ['en', 'ar']) { const pg = await fresh(null, '#/roadmap?lang=' + l);
+    for (const r of ['landing', 'roadmap', 'step/s7', 'step/s9', 'step/s10', 'step/s12', 'step/s7?s=skip', 'stars?s=after', 'step/s3?s=new', 'bank?s=new']) { await pg.goto(`${f}#/${r}${r.includes('?') ? '&' : '?'}lang=${l}`); await pg.waitForTimeout(80); res.push([l + ' ' + r, await pg.evaluate(count)]); } await pg.context().close(); }
+  const worst = res.slice().sort((a, b2) => b2[1] - a[1])[0]; ok('G15', res.every(x => x[1] >= 0 && x[1] <= 45), 'most words before a main button: ' + worst[1] + ' (' + worst[0] + '), over ' + res.length + ' screens'); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

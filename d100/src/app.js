@@ -216,7 +216,7 @@ roadmap(){const st=steps(),nx=nextOpen(),done=st.filter(s=>S.done[s.id]),sk=st.f
 
 step(id){const st=steps(),s=stepById(id)||nextOpen()||st[0],dn=S.done[s.id],pv=s.cat?P[s.cat]:null,pk=S.picks[s.id],n=s.due-S.day,fine=s.fine?aed(s.fine):(s.fineTxt?L(s.fineTxt):''),
    lk=LINK[s.a],pre=blockers(s),w=sents(whyText(s)),own=pk==='own',okPick=pk&&(!own||(OWN[s.id]||'').trim()),seen=VIS[s.id];
-  const learn=`<details class="learn"><summary>${t('learn')}</summary>${w.length>1?`<p>${w.slice(1).join(' ')}</p>`:''}<b>${t('need')}</b><ul>${s.d.map(x=>`<li>${L(x)}</li>`).join('')}</ul>${pv?`<p class="note">${t('sample')}</p>`:''}${s.soft?`<p class="note">${t('sampleStep')}</p>`:''}<p class="note">${t('pilotNote')}</p></details>`;
+  const learn=`<details class="learn"><summary>${t('learn')}</summary>${w.length>1?`<p>${w.slice(1).join(' ')}</p>`:''}<b>${t('need')}</b><ul>${s.d.map(x=>`<li>${L(x)}</li>`).join('')}</ul>${pv?`<p class="note">${t('rank')}</p><p class="note">${t('sample')}</p>`:''}${s.soft?`<p class="note">${t('sampleStep')}</p>`:''}<p class="note">${t('pilotNote')}</p></details>`;
   let foot='',h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:st.indexOf(s)+1,m:st.length})}</b>${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}${dn||s.auto?'':t('sep')+when(n).toLowerCase()}</p><h1>${L(s.t)}</h1>
    <p class="body">${w[0]}</p>${fine?`<p class="risk">${t('missed')}: ${fine}</p>`:''}${!dn&&SK()[s.id]?`<p class="note">${t('skOn',{d:SK()[s.id]})}</p>`:''}`;
   if(dn){const nx=nextOpen();h+=`<p class="note">${t('doneOn',{d:dn})}${pk&&pv?t('sep')+esc(own?OWN[s.id]||'':(pv.find(p=>p.id===pk)||{}).n||''):''}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}${learn}`}
@@ -224,7 +224,7 @@ step(id){const st=steps(),s=stepById(id)||nextOpen()||st[0],dn=S.done[s.id],pv=s
   else if(pre.length)h+=`<div class="lock"><b>${t('lockT')}</b>${pre.map(q=>`<a class="link" href="${hrefOf(q)}">${L(q.t)}</a>`).join('')}</div>${skipBtn(s)}${learn}`;
   else{
    if(pv)h+=`<h2>${t('choose')}</h2><div class="opts" role="radiogroup">${pv.map(p=>opt(p,s.id)).join('')}<button class="opt" role="radio" aria-checked="${own}" data-act="pick:${s.id}:own"><span class="rd"></span><b>${t('ownP')}</b></button></div>
-     ${own?`<input id="own" data-step="${s.id}" type="text" maxlength="40" placeholder="${t('ownPh')}" value="${esc(OWN[s.id]||'')}" style="margin-top:10px">`:''}<p class="note">${t('rank')}</p>`;
+     ${own?`<input id="own" data-step="${s.id}" type="text" maxlength="40" placeholder="${t('ownPh')}" value="${esc(OWN[s.id]||'')}" style="margin-top:10px">`:''}`;
    if(lk)h+=`<a class="btn${seen?' sec':''}" style="margin-top:18px" href="${lk}" target="_blank" rel="noopener" data-act="visit:${s.id}">${t('openSite',{n:L(A[s.a])})}${I.ext}</a><p class="note">${t('goesTo',{h:lk.replace(/^https?:\/\/(www\.)?/,'')})}</p>`;
    h+=learn;foot=`<button class="btn${lk&&!seen?' sec':''}" data-act="done:${s.id}" ${pv&&!okPick?'disabled':''}>${pv?(okPick?t('confirmPick'):t('pickFirst')):(lk&&!seen?t('already'):t('iDid'))}</button>${skipBtn(s)}`}
   return shell(sub(t('tRoad'),'roadmap'),h,'roadmap',foot)+skipSheet(s)},
@@ -233,8 +233,9 @@ bank(){const st=steps(),dn=S.done.s2,pk=S.bankPick||'up',bk=BANKS.find(x=>x.id==
   let foot='',h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:2,m:st.length})}</b>${t('sep')}${t('dueDay',{d:7}).toLowerCase()}</p><h1>${t('bankT')}</h1><p class="body">${L(st[1].w)}</p>${!dn&&SK().s2?`<p class="note">${t('skOn',{d:SK().s2})}</p>`:''}`;
   if(dn)h+=`<p class="note">${t('bkDone',{d:dn})}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}`;
   else h+=`<div class="banks" role="radiogroup">${BANKS.map(x=>`<button class="bk" role="radio" aria-checked="${pk===x.id}" data-act="bankpick:${x.id}">${LOGOS[x.id]?`<img${x.id==='up'?' class="dk"':''} src="${LOGOS[x.id]}" alt="${x.n}">`:`<span class="mono">${x.m}</span><span>${x.n}</span>`}${x.rec?`<small>${t('recommended')}</small>`:''}</button>`).join('')}</div>
-   <p class="note" style="margin-top:8px">${t('notPartners')}</p>${pk==='up'?`<ul class="plain">${['bk1','bk2','bk3'].map(k=>`<li>${t(k)}</li>`).join('')}</ul><p class="note">${t('propPartner')}. ${t('bkSrc')}</p>`:`<p class="note">${t('anyP')}</p>`}
-   <a class="btn${seen?' sec':''}" style="margin-top:16px" href="${bk.u}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bk.n})}${I.ext}</a><p class="note">${t('goesTo',{h:bk.u.replace(/^https?:\/\/(www\.)?/,'')})}</p>`,foot=`<button class="btn${seen?'':' sec'}" data-act="done:s2">${seen?t('iDid'):t('already')}</button>${skipBtn(st[1])}`;
+   <p class="note" style="margin-top:8px">${pk==='up'?t('propPartner')+'. ':''}${t('notPartners')}</p>
+   <a class="btn${seen?' sec':''}" style="margin-top:16px" href="${bk.u}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bk.n})}${I.ext}</a><p class="note">${t('goesTo',{h:bk.u.replace(/^https?:\/\/(www\.)?/,'')})}</p>
+   <details class="learn"><summary>${t(pk==='up'?'bkWhat':'learn')}</summary>${pk==='up'?`<ul>${['bk1','bk2','bk3'].map(k=>`<li>${t(k)}</li>`).join('')}</ul><p class="note">${t('bkSrc')}</p>`:`<p>${t('anyP')}</p>`}</details>`,foot=`<button class="btn${seen?'':' sec'}" data-act="done:s2">${seen?t('iDid'):t('already')}</button>${skipBtn(st[1])}`;
   return shell(sub(t('tRoad'),'roadmap'),h,'roadmap',foot)+skipSheet(st[1])},
 
 cash(){const b=bal(S.day),m=monthly(),z=zeroDay(),up=ONEOFF.filter(o=>o.d>S.day),upSum=up.reduce((a,o)=>a+o.a,0),R=rtl();

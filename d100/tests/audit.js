@@ -179,9 +179,9 @@ function inPage(o) {
   }
 
   // words before the main button, and whether it is on the first screen
-  if (!isShots && scroller && !overlay) { const btn = app.querySelector('.sticky .btn,.actions .btn') || scroller.querySelector('.btn');
+  if (!isShots && scroller && !overlay) { const btn = app.querySelector('.actions .btn,.next .btn,.unlock .btn'); // the next step for the judge; list pages and closing actions have none
     if (btn) { const w2 = document.createTreeWalker(scroller, NodeFilter.SHOW_TEXT); let words = 0, m;
-      while ((m = w2.nextNode())) { if (btn.compareDocumentPosition(m) & Node.DOCUMENT_POSITION_FOLLOWING || btn.contains(m)) break; const pe = m.parentElement; if (!pe || shut(pe) || pe.closest('svg,.lic,.opt,.bk,.step,.sticky,.actions,.skip,[role=radio],.dl,.dayhead')) continue; const rg = document.createRange(); rg.selectNodeContents(m); if (!rg.getClientRects().length) continue; words += (m.nodeValue.match(/\S+/g) || []).length; }
+      while ((m = w2.nextNode())) { const stop = scroller.contains(btn) ? btn : scroller.querySelector('.cta'); if (stop && (stop.compareDocumentPosition(m) & Node.DOCUMENT_POSITION_FOLLOWING || stop.contains(m))) break; const pe = m.parentElement; if (!pe || shut(pe) || pe.closest('svg,.lic,.opt,.bk,.step,.actions,.skip,.btn,.up,summary,[role=radio],.dl,.dayhead')) continue; const rg = document.createRange(); rg.selectNodeContents(m); if (!rg.getClientRects().length) continue; words += (m.nodeValue.match(/\S+/g) || []).length; }
       if (words > 45) add('too-many-words', words + ' words of prose before "' + txt(btn).slice(0, 24) + '"', btn);
       const r = btn.getBoundingClientRect(); if (!o.wide && (r.bottom > VH || r.top < 0)) add('main-button-below-fold', '"' + txt(btn).slice(0, 24) + '" starts at ' + Math.round(r.top) + ' of ' + VH, btn); } }
 
