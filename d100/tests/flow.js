@@ -143,6 +143,11 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
 // G18 a typed business name survives a language switch and a refresh
 { const pg = await fresh(null, '#/start'); await pg.fill('#biz', 'Noor Atelier'); await pg.click('#app .lang'); await pg.waitForTimeout(150); const a = await pg.inputValue('#biz'); await pg.reload(); await pg.waitForSelector('#biz'); const b3 = await pg.inputValue('#biz');
   ok('G18', a === 'Noor Atelier' && b3 === 'Noor Atelier', 'business name after a language switch: "' + a + '", after a refresh: "' + b3 + '"'); await pg.context().close(); }
+// G19 every tap target is at least 44 by 44px
+{ const small = []; for (const vw of [320, 390]) for (const l of ['en', 'ar']) { const pg = await fresh({ viewport: { width: vw, height: 700 } }, '#/roadmap?lang=' + l);
+    for (const r of ['landing', 'start', 'roadmap', 'step/s7', 'step/s11', 'step/s12', 'step/s7?s=warn', 'bank?s=new', 'cash', 'stars', 'market', 'programmes', 'nudges', 'tiers', 'day100', 'more']) { await pg.goto(`${f}#/${r}${r.includes('?') ? '&' : '?'}lang=${l}`); await pg.waitForTimeout(60);
+      small.push(...await pg.evaluate(k => [...document.querySelectorAll('#app a[href],#app button,#app input,#app summary')].filter(e => !e.closest('details:not([open])') || e.tagName === 'SUMMARY').map(e => [e, e.getBoundingClientRect()]).filter(x => x[1].width > 0 && (x[1].width < 43.5 || x[1].height < 43.5)).map(x => k + ' ' + (x[0].className || x[0].tagName) + ' ' + Math.round(x[1].width) + 'x' + Math.round(x[1].height)), vw + ' ' + l + ' ' + r)); } await pg.context().close(); }
+  ok('G19', small.length === 0, 'tap targets under 44px: ' + (small.length ? small.length + ', e.g. ' + [...new Set(small)].slice(0, 4).join('; ') : 'none, across 16 screens at 320 and 390px in both languages')); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
