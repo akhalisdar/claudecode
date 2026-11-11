@@ -1,0 +1,12 @@
+# Every response: no indexing, strict CSP (self only, data: for images, plus the hash of the one inline style), HTML never cached.
+/*
+  X-Robots-Tag: noindex
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'sha256-NFTyb1UpzRUNHKPRGMOpV5hBo7jn8wl628YQuuhNOM0='; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Cache-Control: no-cache
+
+# Hashed files never change: cache them for a year.
+/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable

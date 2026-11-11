@@ -231,6 +231,7 @@ async function auditDevice(browser, dev, base, results) {
   }
 }
 
+const SRC = (() => { let s = fs.readFileSync(target, 'utf8'); const a = path.join(path.dirname(path.resolve(target)), 'assets'); if (fs.existsSync(a)) for (const f of fs.readdirSync(a)) if (/\.js$/.test(f)) s += fs.readFileSync(path.join(a, f), 'utf8'); return s; })();
 /* ---------- the judge journey ---------- */
 async function journey(browser, dev, base, lang, out) {
   const ctx = await browser.newContext({ ...dev.ctx, locale: lang === 'ar' ? 'ar-AE' : 'en-GB' });
@@ -288,7 +289,7 @@ async function journey(browser, dev, base, lang, out) {
     await w(1200); if (pop) await pop.close().catch(() => {}); await page.bringToFront(); await w(700);
     const lbl1 = await page.locator('#confirm .btn').innerText(); const ok = lbl0 !== lbl1 && /Stamp|اختم/.test(lbl1);
     note('J07', ok, 'After opening the official site and coming back, the button reads "Done. Stamp it"', lbl0 + ' -> ' + lbl1 + (pop ? '' : ' (no new tab)'));
-    const viaEvents = await ev(async () => { let src = [...document.scripts].map(s => s.textContent).join(''); for (const s of document.scripts) if (s.src) src += await (await fetch(s.src)).text(); return /visibilitychange/.test(src) && /pageshow/.test(src) && !/setTimeout\(render,\s*400\)/.test(src); });
+    const viaEvents = /visibilitychange/.test(SRC) && /pageshow/.test(SRC) && !/setTimeout\(render,\s*400\)/.test(SRC);
     note('J07b', viaEvents, 'The return is detected with visibilitychange/pageshow, not a timer', viaEvents ? '' : 'only setTimeout(render,400) in the source'); });
   await run('J08', 'Refresh keeps the plan', async () => {
     await ev(() => { location.hash = '#/roadmap'; }); await w(300); const before = await doneCount(); const lg = await ev(() => document.documentElement.lang);

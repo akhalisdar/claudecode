@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 (async () => {
-  const file = 'file://' + path.resolve(process.argv[2]);
+  const srv = await require('./serve').serveFile(process.argv[2]); const file = srv.url.replace(/\/$/, '/');
   const out = path.resolve(process.argv[3]);
   const quick = process.argv[4] === 'quick';
   fs.mkdirSync(out, { recursive: true });
@@ -48,5 +48,5 @@ const fs = require('fs');
   }
   await desk.close();
 
-  await browser.close(); console.log(errors.length ? errors.join('\n') : 'shots ok'); return;
+  await browser.close(); srv.close(); console.log(errors.length ? errors.join('\n') : 'shots ok'); return;
 })();

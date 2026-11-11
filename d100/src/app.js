@@ -96,9 +96,9 @@ const holds=s=>{const m=PRE[S.activity]||PRE.cafe;return steps().filter(q=>(m[q.
 const sell=(tier,k)=>`<a class="up" href="#/tiers"><i>${t(tier)}</i><span>${t(k)}</span>${I.chev}</a>`;
 const skipBtn=s=>SK()[s.id]?'':`<button class="skip" data-act="warn:${s.id}">${t('skip')}</button>`;
 function skipSheet(s){if(S.warn!==s.id)return '';const hd=holds(s),fine=s.fine?aed(s.fine):(s.fineTxt?L(s.fineTxt):'');
-  return `<div class="sheet-bg" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t" tabindex="-1" data-stop="1"><h3 id="sheet-t">${t('skQ')}</h3><p class="body" style="margin:6px 0 0">${L(s.t)}${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}</p>
+  return `<div class="sheet-bg" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t" tabindex="-1" data-stop="1"><h3 id="sheet-t">${t('skQ')}</h3><p class="body mt6">${L(s.t)}${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}</p>
   ${fine?`<p class="risk">${t('missed')}: ${fine}</p>`:''}${hd.length?`<p class="note">${t('skHolds')}: ${hd.map(q=>L(q.t)).join(t('sep'))}</p>`:''}<p class="note">${t('skKeep')}</p>${sell('pro','upSkip')}
-  <button class="btn" style="margin-top:14px" data-act="closesheet">${t('goBack')}</button><button class="btn sec" style="margin-top:8px" data-act="skip:${s.id}">${t('skAny')}</button></div></div>`}
+  <button class="btn mt14" data-act="closesheet">${t('goBack')}</button><button class="btn sec mt8" data-act="skip:${s.id}">${t('skAny')}</button></div></div>`}
 const hrefOf=s=>'#/'+(s.bank?'bank':'step/'+s.id);
 const bizName=()=>rtl()&&S.biz===DEF_BIZ?DEF_BIZ_AR:S.biz;
 const ic=(d,c='')=>`<svg class="ico ${c}" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
@@ -118,7 +118,7 @@ const STAR='M12 2.6l2.9 6.2 6.8.8-5 4.7 1.3 6.7-6-3.4-6 3.4 1.3-6.7-5-4.7 6.8-.8
 /* ---------- drawn objects: stamp, ruler, plaque, licence ---------- */
 let sid=0;
 function stamp(o){const id='s'+(++sid),c=o.c||'#2845A6';
-  return `<svg viewBox="0 0 120 120" style="direction:ltr" role="img" aria-label="${o.label||''}"><defs><path id="${id}a" d="M19,60 A41,41 0 0 1 101,60"/><path id="${id}b" d="M13.5,60 A46.5,46.5 0 0 0 106.5,60"/></defs>
+  return `<svg class="ltr" viewBox="0 0 120 120" role="img" aria-label="${o.label||''}"><defs><path id="${id}a" d="M19,60 A41,41 0 0 1 101,60"/><path id="${id}b" d="M13.5,60 A46.5,46.5 0 0 0 106.5,60"/></defs>
   <g fill="none" stroke="${c}"><circle cx="60" cy="60" r="57" stroke-width="2.6"/><circle cx="60" cy="60" r="52.6" stroke-width=".9"/><circle cx="60" cy="60" r="31.5" stroke-width=".9"/></g>
   <g fill="${c}" font-family="IBM Plex Sans,sans-serif" font-weight="600">
    <text font-size="8.6" letter-spacing="1.5"><textPath href="#${id}a" startOffset="50%" text-anchor="middle">${o.top}</textPath></text>
@@ -137,14 +137,14 @@ function ruler(){const W=354,H=46,x=d=>{const v=3+(d-1)/99*(W-6);return rtl()?W-
     if(f)lab+=`<text x="${x(d).toFixed(1)}" y="45" font-size="10.5" font-weight="600" fill="${f}" text-anchor="middle">${d}</text>`}
   for(const d of [1,100])if(!flags[d])lab+=`<text x="${x(d).toFixed(1)}" y="45" font-size="10.5" fill="#555A66" text-anchor="${(d===1)!==rtl()?'start':'end'}">${d}</text>`;
   const tx=x(S.day);
-  return `<svg class="ruler" style="direction:ltr" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t('day')} ${S.day} ${t('of100')}" font-family="IBM Plex Sans,sans-serif">
+  return `<svg class="ruler ltr" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t('day')} ${S.day} ${t('of100')}" font-family="IBM Plex Sans,sans-serif">
   <line x1="${x(1)}" x2="${x(S.day)}" y1="16" y2="16" stroke="#111318" stroke-width="2.4"/><line x1="${x(S.day)}" x2="${x(100)}" y1="16" y2="16" stroke="#B4B6BE" stroke-width="1.2"/>
   ${s}<path d="M${tx-6} 2h12l-6 10z" fill="#111318"/>${lab}</svg>`}
 
 function plaque(n,top,cap,fresh){const name=bizName(),arN=/[؀-ۿ]/.test(name),f=arN?'IBM Plex Sans Arabic,sans-serif':'IBM Plex Serif,serif',
   fz=Math.max(13,Math.min(27,Math.floor(262/(Math.max(6,name.length)*(arN?.56:.54)))));
   const st=[0,1,2,3,4].map(i=>{const k=rtl()?4-i:i,on=k<n;return `<path class="${fresh&&k===n-1?'pop':''}" transform="translate(${91+i*30},104) scale(1.05)" d="${STAR}" fill="${on?'#2B1E05':'none'}" stroke="#2B1E05" stroke-width="1.1" opacity="${on?.88:.38}"/>`}).join('');
-  return `<svg class="plaque" style="direction:ltr" viewBox="0 0 330 196" role="img" aria-label="${n} / 5"><defs><linearGradient id="br" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6C878"/><stop offset=".5" stop-color="#C29A42"/><stop offset="1" stop-color="#A47C28"/></linearGradient></defs>
+  return `<svg class="plaque ltr" viewBox="0 0 330 196" role="img" aria-label="${n} / 5"><defs><linearGradient id="br" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6C878"/><stop offset=".5" stop-color="#C29A42"/><stop offset="1" stop-color="#A47C28"/></linearGradient></defs>
   <rect x="2" y="2" width="326" height="192" rx="9" fill="url(#br)"/><rect x="11" y="11" width="308" height="174" rx="5" fill="none" stroke="#2B1E05" stroke-opacity=".32"/>
   ${[[24,24],[306,24],[24,172],[306,172]].map(c=>`<circle cx="${c[0]}" cy="${c[1]}" r="4.2" fill="#8A6416"/><path d="M${c[0]-2.4} ${c[1]-1.2}l4.8 2.4" stroke="#2B1E05" stroke-opacity=".5"/>`).join('')}
   <text x="165" y="48" text-anchor="middle" font-family="IBM Plex Sans,IBM Plex Sans Arabic,sans-serif" font-weight="600" font-size="11.5" fill="#2B1E05" ${rtl()?'direction="rtl"':'letter-spacing="2"'}>${top}</text>
@@ -201,7 +201,7 @@ landing(){return `<div class="proto">${t('proto')}</div><main class="land"><div 
   <div class="actions end"><a class="btn" href="#/roadmap" data-act="begin">${t('start')}</a></div>`},
 
 start(){const O=S._ob||(S._ob={licence:'mainland',activity:'cafe',emirati:true,capital:150000,biz:''});O.capital=Math.max(CAP[0],Math.min(CAP[1],+O.capital||150000));
-  const r=(k,v,l,s,dis)=>dis?`<div class="opt" style="color:var(--ink2)"><span class="rd" style="border-color:var(--ink2)"></span><b style="font-weight:500">${l}</b><span class="ds" style="color:var(--ink2)">${s}</span></div>`
+  const r=(k,v,l,s,dis)=>dis?`<div class="opt off"><span class="rd"></span><b>${l}</b><span class="ds">${s}</span></div>`
     :`<button class="opt" role="radio" aria-checked="${O[k]===v}" data-act="ob:${k}:${v}"><span class="rd"></span><b>${l}</b>${s?`<span class="ds">${s}</span>`:''}</button>`;
   return `<div class="proto">${t('proto')}</div>${sub(wide?t('tRoad'):'D100',wide?'roadmap':'')}<main class="view">
   <h1>${t('obT')}</h1><p class="lede">${t('obS')}</p>
@@ -223,7 +223,7 @@ roadmap(){const st=steps(),nx=nextOpen(),done=st.filter(s=>S.done[s.id]),sk=st.f
   else if(sk.length)h+=`<section class="next"><h3>${t('skLeft',{n:sk.length})}</h3><a class="btn" href="${hrefOf(sk[0])}">${t('openStep')}</a></section>`;
   else h+=`<section class="next"><h3>${t('allDone')}</h3><a class="btn" href="#/day100">${t('mDay')}</a></section>`;
   if(sk.length)h+=`<h2 class="sk">${t('skT')} (${sk.length})</h2>${sk.map(stepRow).join('')}`;
-  if(left.length){h+=`<h2>${t('todoT')}</h2>`;for(let p=1;p<=4;p++){const it=left.filter(x=>x.ph===p);if(it.length)h+=`<div class="ph" style="${p===left[0].ph?'margin-top:0':''}"><b>${t(PH[p].k)}</b><span>${t('days',{a:PH[p].a,b:PH[p].b})}</span></div>${it.map(stepRow).join('')}`}}
+  if(left.length){h+=`<h2>${t('todoT')}</h2>`;for(let p=1;p<=4;p++){const it=left.filter(x=>x.ph===p);if(it.length)h+=`<div class="ph${p===left[0].ph?' first':''}"><b>${t(PH[p].k)}</b><span>${t('days',{a:PH[p].a,b:PH[p].b})}</span></div>${it.map(stepRow).join('')}`}}
   if(done.length)h+=`<details class="donelist"><summary><span>${t('doneT')} (${done.length})</span></summary>${done.map(stepRow).join('')}</details>`;
   return shell(bar(),h,'roadmap')},
 
@@ -232,22 +232,22 @@ step(id){const st=steps(),s=stepById(id)||nextOpen()||st[0],dn=S.done[s.id],pv=s
   const learn=`<details class="learn"><summary>${t('learn')}</summary>${w.length>1?`<p>${w.slice(1).join(' ')}</p>`:''}<b>${t('need')}</b><ul>${s.d.map(x=>`<li>${L(x)}</li>`).join('')}</ul>${pv?`<p class="note">${t('rank')}</p><p class="note">${t('sample')}</p>`:''}${s.soft?`<p class="note">${t('sampleStep')}</p>`:''}<p class="note">${t('pilotNote')}</p></details>`;
   let foot='',h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:st.indexOf(s)+1,m:st.length})}</b>${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}${dn||s.auto?'':t('sep')+when(n).toLowerCase()}</p><h1>${L(s.t)}</h1>
    <p class="body">${w[0]}</p>${fine?`<p class="risk">${t('missed')}: ${fine}</p>`:''}${!dn&&SK()[s.id]?`<p class="note">${t('skOn',{d:SK()[s.id]})}</p>`:''}`;
-  if(dn){const nx=nextOpen();h+=`<p class="note">${t('doneOn',{d:dn})}${pk&&pv?t('sep')+bd(esc(own?OWN[s.id]||'':(pv.find(p=>p.id===pk)||{}).n||'')):''}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}${learn}`}
+  if(dn){const nx=nextOpen();h+=`<p class="note">${t('doneOn',{d:dn})}${pk&&pv?t('sep')+bd(esc(own?OWN[s.id]||'':(pv.find(p=>p.id===pk)||{}).n||'')):''}</p>${nx?`<a class="btn mt16" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}${learn}`}
   else if(s.auto)h+=`<p class="note">${t('tracking')}</p>${learn}`;
   else if(pre.length)h+=`<div class="lock"><b>${t('lockT')}</b>${pre.map(q=>`<a class="link" href="${hrefOf(q)}">${L(q.t)}</a>`).join('')}</div>${skipBtn(s)}${learn}`;
   else{
    if(pv)h+=`<h2>${t('choose')}</h2><div class="opts" role="radiogroup">${pv.map(p=>opt(p,s.id)).join('')}<button class="opt" role="radio" aria-checked="${own}" data-act="pick:${s.id}:own"><span class="rd"></span><b>${t('ownP')}</b></button></div>
-     ${own?`<input id="own" data-step="${s.id}" type="text" maxlength="40" placeholder="${t('ownPh')}" value="${esc(OWN[s.id]||'')}" style="margin-top:10px">`:''}`;
-   if(lk)h+=`<a class="btn${seen?' sec':''}" style="margin-top:18px" href="${lk}" target="_blank" rel="noopener" data-act="visit:${s.id}">${t('openSite',{n:bd(L(A[s.a]))})}${I.ext}</a><p class="note">${t('goesTo',{h:bdl(hostOf(lk))})}</p>`;
+     ${own?`<input id="own" data-step="${s.id}" type="text" maxlength="40" placeholder="${t('ownPh')}" value="${esc(OWN[s.id]||'')}" class="mt10">`:''}`;
+   if(lk)h+=`<a class="btn${seen?' sec':''} mt18" href="${lk}" target="_blank" rel="noopener" data-act="visit:${s.id}">${t('openSite',{n:bd(L(A[s.a]))})}${I.ext}</a><p class="note">${t('goesTo',{h:bdl(hostOf(lk))})}</p>`;
    h+=learn;foot=`<button class="btn${lk&&!seen?' sec':''}" data-act="done:${s.id}" ${pv&&!okPick?'disabled':''}>${pv?(okPick?t('confirmPick'):t('pickFirst')):(lk&&!seen?t('already'):t('iDid'))}</button>${skipBtn(s)}`}
   return shell(sub(t('tRoad'),'roadmap'),h,'roadmap',foot)+skipSheet(s)},
 
 bank(){const st=steps(),dn=S.done.s2,pk=S.bankPick||'up',bk=BANKS.find(x=>x.id===pk)||BANKS[0],seen=VIS.s2,nx=nextOpen();
   let foot='',h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:2,m:st.length})}</b>${t('sep')}${t('dueDay',{d:7}).toLowerCase()}</p><h1>${t('bankT')}</h1><p class="body">${L(st[1].w)}</p>${!dn&&SK().s2?`<p class="note">${t('skOn',{d:SK().s2})}</p>`:''}`;
-  if(dn)h+=`<p class="note">${t('bkDone',{d:dn})}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}`;
+  if(dn)h+=`<p class="note">${t('bkDone',{d:dn})}</p>${nx?`<a class="btn mt16" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}`;
   else h+=`<div class="banks" role="radiogroup">${BANKS.map(x=>`<button class="bk" role="radio" aria-checked="${pk===x.id}" data-act="bankpick:${x.id}">${LOGOS[x.id]?`<img${x.id==='up'?' class="dk"':''} src="${LOGOS[x.id]}" width="${x.w}" height="${x.h}" alt="${x.n}">`:`<span class="mono">${x.m}</span><span>${x.n}</span>`}${x.rec?`<small>${t('recommended')}</small>`:''}</button>`).join('')}</div>
-   <p class="note" style="margin-top:8px">${pk==='up'?t('propPartner')+'. ':''}${t('notPartners')}</p>
-   <a class="btn${seen?' sec':''}" style="margin-top:16px" href="${U(bk.u)}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bd(bk.n)})}${I.ext}</a><p class="note">${t('goesTo',{h:bdl(hostOf(U(bk.u)))})}</p>
+   <p class="note mt8">${pk==='up'?t('propPartner')+'. ':''}${t('notPartners')}</p>
+   <a class="btn${seen?' sec':''} mt16" href="${U(bk.u)}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bd(bk.n)})}${I.ext}</a><p class="note">${t('goesTo',{h:bdl(hostOf(U(bk.u)))})}</p>
    <details class="learn"><summary>${t(pk==='up'?'bkWhat':'learn')}</summary>${pk==='up'?`<ul>${['bk1','bk2','bk3'].map(k=>`<li>${t(k)}</li>`).join('')}</ul><p class="note">${t('bkSrc')}</p>`:`<p>${t('anyP')}</p>`}</details>`,foot=`<button class="btn${seen?'':' sec'}" data-act="done:s2">${seen?t('iDid'):t('already')}</button>${skipBtn(st[1])}`;
   return shell(sub(t('tRoad'),'roadmap'),h,'roadmap',foot)+skipSheet(st[1])},
 
@@ -255,7 +255,7 @@ cash(){const b=bal(S.day),m=monthly(),z=zeroDay(),up=ONEOFF.filter(o=>o.d>S.day)
   const W=354,H=168,px=d=>{const v=3+(d-1)/99*(W-6);return R?W-v:v},top=Math.max(S.capital,bal(100,true)),py=v=>24+(1-Math.max(0,v)/top)*(H-52);
   const line=(a,z2,sl)=>{let p='';for(let d=a;d<=z2;d++){const v=bal(d,sl);p+=(p?'L':'M')+px(d).toFixed(1)+' '+py(v).toFixed(1);if(v<0)break}return p};
   const y0=py(0),endN=z||100,as=R?'end':'start',ae=R?'start':'end';
-  const svg=`<svg style="direction:ltr" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t('bal')}" font-family="IBM Plex Sans,IBM Plex Sans Arabic,sans-serif" font-size="10.5">
+  const svg=`<svg class="ltr" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t('bal')}" font-family="IBM Plex Sans,IBM Plex Sans Arabic,sans-serif" font-size="10.5">
    <line x1="3" x2="${W-3}" y1="${y0}" y2="${y0}" stroke="#111318" stroke-width="1.2"/>
    ${Array.from({length:100},(_,i)=>i+1).map(d=>`<line x1="${px(d).toFixed(1)}" x2="${px(d).toFixed(1)}" y1="${y0}" y2="${y0+(d%10===0?7:d%5===0?5:3)}" stroke="#B4B6BE" stroke-width="1"/>`).join('')}
    <line x1="${px(OPEN)}" x2="${px(OPEN)}" y1="18" y2="${y0}" stroke="#B4B6BE" stroke-dasharray="2 3"/>
@@ -268,7 +268,7 @@ cash(){const b=bal(S.day),m=monthly(),z=zeroDay(),up=ONEOFF.filter(o=>o.d>S.day)
    <circle cx="${px(S.day)}" cy="${py(b)}" r="4.5" fill="#111318" stroke="#F4F4F1" stroke-width="2"/>
    ${[1,25,50,75,100].map(d=>`<text x="${px(d)}" y="${H-3}" fill="#555A66" text-anchor="${d===1?as:d===100?ae:'middle'}">${d}</text>`).join('')}</svg>`;
   const rows=[['rent',7500],['team',14000],['supplies',6200],['other2',3800]];
-  const h=`<p class="say">${z&&z<=110?t('cashRun',{z}):t('cashOk')}</p><p class="lede" style="margin:0">${t('cashPlan')}</p>
+  const h=`<p class="say">${z&&z<=110?t('cashRun',{z}):t('cashOk')}</p><p class="lede m0">${t('cashPlan')}</p>
   <div class="figs"><div><small>${t('bal')}</small><b>${aed(b)}</b></div><div><small>${t('costs')}</small><b>${fmt(m)}</b></div><div><small>${t('runway')}</small><b>${(b/m).toFixed(1)} ${t('months')}</b></div></div>
   <div class="chart">${svg}<div class="legend"><span><i></i>${t('lgA')}</span><span><i class="p1"></i>${t('lgP')}</span><span><i class="p2"></i>${t('lgN')}</span></div></div>
   ${z&&z<=110?`<div class="sees"><b>${t('seeT')}</b>${t('seeP',{a:fmt(upSum),f:up.length?up[0].d:S.day,l:up.length?up[up.length-1].d:S.day,z,w:fmt(m/30*7)})}</div>`:`<div class="sees ok"><b>${t('seeT')}</b>${t('seeOk')}</div>`}
@@ -283,11 +283,11 @@ stars(){const sc=score(),n=starsOf(sc),nxt=THR[n],cr=CREDIT[n],nx=nextOpen(),un=
   const h=`${S.unlock?`<div class="unlock"><b>${t('earned',{n})}</b><span>${t('earnedP',{s:sc,t:L((stepById(S.unlockStep)||stepById('s7')).t)})}</span>${nx?`<a class="btn" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}</div>`:''}
   <h1>${t('recT')}</h1><p class="lede">${t('plaqueSo')}</p>${plaque(n,'D100',t('day')+' '+S.day+' '+t('of100'),S.unlock)}
   <div class="scoreline"><b class="num">${sc}<small> ${t('of100')}</small></b><span>${nxt?t('nextStar',{p:nxt-sc,n:n+1}):t('top')}</span></div>
-  <div class="meter"><span style="width:${sc}%"></span>${THR.map((x,i)=>`<i style="inset-inline-start:${x}%"></i><em class="${sc>=x?'hit':''}" style="inset-inline-start:${x}%">${i+1}★</em>`).join('')}</div>
-  ${nxt&&nx?`<div class="rows"><a href="#/${nx.bank?'bank':'step/'+nx.id}"><span>${t('nextHow',{t:L(nx.t)})}</span><span class="amt">${plus(6)} ${I.chev.replace('class="ico','style="display:inline;vertical-align:-4px" class="ico')}</span></a></div>`:''}
+  <div class="meter"><span data-w="${sc}"></span>${THR.map((x,i)=>`<i data-x="${x}"></i><em class="${sc>=x?'hit':''}" data-x="${x}">${i+1}★</em>`).join('')}</div>
+  ${nxt&&nx?`<div class="rows"><a href="#/${nx.bank?'bank':'step/'+nx.id}"><span>${t('nextHow',{t:L(nx.t)})}</span><span class="amt">${plus(6)} ${I.chev.replace('class="ico','class="ico inl')}</span></a></div>`:''}
   <section class="credit"><small>${t('credit')}</small>${cr?`<p>${t('creditNow')}</p><b class="num">${aed(cr)}</b><p>${CREDIT[n+1]?t('creditNext',{n:n+1,x:fmt(CREDIT[n+1])})+' ':''}${t('illus')}</p>`:`<p>${t('creditNone')}</p>`}</section>
-  ${sell('exec','upStar')}<div style="height:14px"></div>${S.unlock?`<a class="btn sec" href="#/cash">${t('seeCash')}</a>`:''}
-  <h2>${t('unlockT')}</h2><div class="rows">${un.map((k,i)=>`<div class="${i+1===n?'cur':(i+1>n?'dim':'')}" style="justify-content:flex-start"><span class="sn">${'★'.repeat(i+1)}</span><span>${t(k)}</span></div>`).join('')}</div>
+  ${sell('exec','upStar')}<div class="gap14"></div>${S.unlock?`<a class="btn sec" href="#/cash">${t('seeCash')}</a>`:''}
+  <h2>${t('unlockT')}</h2><div class="rows">${un.map((k,i)=>`<div class="start${i+1===n?' cur':(i+1>n?' dim':'')}"><span class="sn">${'★'.repeat(i+1)}</span><span>${t(k)}</span></div>`).join('')}</div>
   <h2>${t('earnT')}</h2><div class="rows"><div><span>${t('e1')}</span><span class="amt">${plus(6)}</span></div><div><span>${t('e2')}</span><span class="amt">${plus(1)}</span></div><div><span>${t('e3')}</span><span class="amt">${plus(5)}</span></div></div>
   <p class="note">${t('noBuy')}</p>`;
   return shell(bar(),h,'stars')},
@@ -303,10 +303,10 @@ programmes(){const list=PROG.filter(p=>!p.em||S.emirati),sh=S.sheet&&PROG.find(p
   const h=`<h1>${t('prT')}</h1><p class="lede">${t('prS')}</p>`+list.map(p=>`<article class="prog"><small>${t('exMatch')}</small><h3>${L(p.n)}</h3><span class="by">${L(p.by)}</span><p>${L(p.p)}</p>
    <p class="why">${t('prWhy')}: ${L(p.y)}</p><button class="btn sec" data-act="sheet:${p.id}">${t('prGo')}</button></article>`).join('');
   let page=shell(sub(t('tMore')),h,'more');
-  if(sh)page+=`<div class="sheet-bg" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t" tabindex="-1" data-stop="1"><h3 id="sheet-t">${L(sh.n)}</h3><p class="note" style="margin:0">${t('shT')}</p>
+  if(sh)page+=`<div class="sheet-bg" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t" tabindex="-1" data-stop="1"><h3 id="sheet-t">${L(sh.n)}</h3><p class="note m0">${t('shT')}</p>
    <dl class="dl"><dt>${t('shBiz')}</dt><dd>${bd(esc(bizName()))}</dd><dt>${t('shLic')}</dt><dd>${t('q1a')}</dd><dt>${t('shAct')}</dt><dd>${t(S.activity==='shop'?'q2b':'q2a')}</dd>
    <dt>${t('shOwn')}</dt><dd>${t(S.emirati?'q3a':'q3b')}</dd><dt>${t('shDay')}</dt><dd>${S.day}</dd><dt>${t('shRec')}</dt><dd>${'★'.repeat(starsOf(sc))||'–'} ${sc}</dd></dl>
-   <p class="note" style="margin:12px 0 14px">${t('shNote')}</p>${PLINK[sh.id]?`<a class="btn" style="margin-bottom:8px" href="${PLINK[sh.id]}" target="_blank" rel="noopener">${t('openSite',{n:bd(L(sh.by))})}${I.ext}</a>`:''}<button class="btn sec" data-act="closesheet">${t('close')}</button></div></div>`;
+   <p class="note m12">${t('shNote')}</p>${PLINK[sh.id]?`<a class="btn mb8" href="${PLINK[sh.id]}" target="_blank" rel="noopener">${t('openSite',{n:bd(L(sh.by))})}${I.ext}</a>`:''}<button class="btn sec" data-act="closesheet">${t('close')}</button></div></div>`;
   return page},
 
 nudges(){const h=`<h1>${t('ngT')}</h1><p class="lede">${t('ngS')}</p><div class="thread">
@@ -327,19 +327,19 @@ tiers(){const li=a=>a.map(k=>`<li>${I.tick}<span>${t(k)}</span></li>`).join('');
 
 day100(){const h=`<h1>${t('dT')}</h1><p class="lede">${t('dS',{b:bd(esc(bizName()))})}</p>${plaque(4,t('gradOf'),t('gradWhen',{m:dateAt(100,0,{month:'long',year:'numeric'})}))}
   <h2>${t('after')}</h2><div class="rows"><div><span>${t('a1')}</span></div><div><span>${t('a2')}</span></div><div><span>${t('a3')}</span></div></div>
-  ${sell('exec','upDay')}<button class="btn" style="margin-top:18px" data-act="toast:becomeT">${t('become')}</button>`;
+  ${sell('exec','upDay')}<button class="btn mt18" data-act="toast:becomeT">${t('become')}</button>`;
   return shell(sub(t('tMore')),h,'more')},
 
 more(){const r=(href,l,act)=>`<a href="${href}" ${act?`data-act="${act}"`:''}><span>${l}</span>${I.chev}</a>`;
   const h=`<h1>${t('mT')}</h1>
-  <div class="rows" style="margin-top:12px">${r('#/programmes',t('mProg'))}${r('#/nudges',t('mNudge'))}${r('#/tiers',t('mPlans'))}${r('#/day100',t('mDay'))}${r('#/bank',t('mBank'))}${r('#/shots',t('mShots'))}</div>
+  <div class="rows mt12">${r('#/programmes',t('mProg'))}${r('#/nudges',t('mNudge'))}${r('#/tiers',t('mPlans'))}${r('#/day100',t('mDay'))}${r('#/bank',t('mBank'))}${r('#/shots',t('mShots'))}</div>
   <h2>${t('mDemo')}</h2><div class="rows">${r('#/roadmap',t('mReset'),'reset')}${r('#/start',t('mFresh'))}${S.day<37?r('#/roadmap',t('mJump'),'jump'):''}</div>
   <p class="note">${t('partners')}</p>`;
   return shell(bar(),h,'more')}
 };
 
 /* ---------- desktop left column ---------- */
-function pitch(){$('#pitch').innerHTML=`<div class="ptop"><span class="wm">D100</span><span class="note" style="margin:0">${t('concept')}</span></div>${landBody()}
+function pitch(){$('#pitch').innerHTML=`<div class="ptop"><span class="wm">D100</span><span class="note m0">${t('concept')}</span></div>${landBody()}
   <div class="pfoot"><a class="link" href="#/shots">${t('all')}</a><button class="link" data-act="lang">${t('other')}</button></div>`}
 
 /* ---------- router ---------- */
@@ -371,7 +371,7 @@ function render(){
   if(old&&app.dataset.route){const d=$('details.donelist',app);SCR[app.dataset.route]={y:old.scrollTop,open:!!(d&&d.open)}}
   const mem=(app.dataset.route===key||goingBack)?SCR[key]:null;goingBack=false;
   app.innerHTML=html(name,r.arg)+(S.slam?`<div class="slam">${doneStamp(S.slam.day)}</div>`:'');
-  app.dataset.route=key;
+  app.dataset.route=key;paint(app);
   /* an open sheet is a modal dialog: the screen behind is inert and does not scroll, and focus moves into the sheet */
   const sheet=$('.sheet',app);app.classList.toggle('has-sheet',!!sheet);
   if(sheet){for(const ch of app.children)if(!ch.classList.contains('sheet-bg'))ch.setAttribute('inert','');if(!sheet.contains(document.activeElement))try{sheet.focus({preventScroll:true})}catch(e){sheet.focus()}}
@@ -379,9 +379,11 @@ function render(){
   const v=$('.view',app)||$('.land',app);if(v&&mem)v.scrollTop=mem.y;
   pitch();save();
 }
+/* sizes that depend on data are set through the CSSOM: the Content-Security-Policy does not allow style attributes */
+function paint(root){root.querySelectorAll('[data-w]').forEach(e=>{e.style.width=e.dataset.w+'%'});root.querySelectorAll('[data-x]').forEach(e=>{e.style[rtl()?'right':'left']=e.dataset.x+'%'})}
 function shots(){const el=$('#shots');el.dir=rtl()?'rtl':'ltr';
   el.innerHTML=`<header><h1>${t('shotsT')}</h1><div class="cta"><button class="link" data-act="lang">${t('other')}</button><a class="btn" href="#/">${t('backApp')}</a></div></header>
-  <div class="shots-grid">${ORDER.map((n,i)=>`<div class="shot"><div class="shot-frame" role="link" tabindex="0" data-act="open:${n==='step'?'step/s7':n}" aria-label="${t('n_'+n)}"><div class="app" dir="${rtl()?'rtl':'ltr'}">${html(n,'s7')}</div></div><p dir="${rtl()?'rtl':'ltr'}">${i+1}. ${t('n_'+n)}</p></div>`).join('')}</div>`}
+  <div class="shots-grid">${ORDER.map((n,i)=>`<div class="shot"><div class="shot-frame" role="link" tabindex="0" data-act="open:${n==='step'?'step/s7':n}" aria-label="${t('n_'+n)}"><div class="app" dir="${rtl()?'rtl':'ltr'}">${html(n,'s7')}</div></div><p dir="${rtl()?'rtl':'ltr'}">${i+1}. ${t('n_'+n)}</p></div>`).join('')}</div>`;paint(el)}
 /* the toast is a row of the shell above the action bar, so it cannot cover a button. It is removed in place: a re-render would drop focus and close the keyboard. */
 function say(k){toast=t(k);clearTimeout(toastT);toastT=setTimeout(()=>{toast=null;const el=$('#app .toast');if(el)el.remove()},2600)}
 function go(h){if(location.hash===h)render();else location.hash=h}
@@ -458,8 +460,10 @@ addEventListener('resize',()=>{const w=matchMedia(WIDE).matches;if(w!==wide)rend
 /* first visit: a phone set to Arabic opens in Arabic. A saved choice or ?lang= in the link wins. */
 if(!load()&&/^ar\b/i.test(navigator.language||''))lang='ar';
 TRAIL.push(keyOf());
-render();
+{const ql=parse().q.get('lang');if(ql)lang=ql==='ar'?'ar':'en'}
+/* first paint: wait for the fonts of the first screen (they are preloaded), at most 0.9s, so the text does not jump when they swap in. The static shell shows meanwhile. */
+const FONTS={en:[['400 16px "IBM Plex Sans"','D'],['600 16px "IBM Plex Sans"','D'],['600 16px "IBM Plex Serif"','D']],ar:[['400 16px "IBM Plex Sans Arabic"','\u0639'],['700 16px "IBM Plex Sans Arabic"','\u0639'],['400 16px "IBM Plex Sans"','1']]};
+const fonts=l=>document.fonts&&document.fonts.load?Promise.all(FONTS[l].map(f=>document.fonts.load(f[0],f[1]))).catch(()=>{}):Promise.resolve();
+let booted=false;const boot=()=>{if(booted)return;booted=true;render();setTimeout(()=>fonts(rtl()?'en':'ar'),1500)};
+fonts(lang).then(boot);setTimeout(boot,900);
 })();
-</script>
-</body>
-</html>

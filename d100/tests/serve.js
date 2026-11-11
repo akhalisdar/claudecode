@@ -14,6 +14,7 @@ function parseHeaders(file) {
   for (const raw of fs.readFileSync(file, 'utf8').split('\n')) {
     if (!raw.trim() || raw.trim().startsWith('#')) continue;
     if (!/^\s/.test(raw)) { cur = { pattern: raw.trim(), headers: [] }; rules.push(cur); continue; }
+    if (cur && raw.trim().startsWith('!')) { cur.headers.push([raw.trim(), '']); continue; }
     const i = raw.indexOf(':'); if (cur && i > 0) cur.headers.push([raw.slice(0, i).trim(), raw.slice(i + 1).trim()]);
   }
   for (const r of rules) r.re = new RegExp('^' + r.pattern.split('*').map(s => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$');
@@ -35,7 +36,8 @@ function serve(root, single) {
     let status = 200;
     if (!fs.existsSync(file)) { status = 404; file = path.join(root, '404.html'); if (!fs.existsSync(file)) { res.writeHead(404); res.end('not found'); return; } }
     const headers = { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' };
-    for (const r of rules) if (r.re.test(p)) for (const [k, v] of r.headers) headers[k] = v;
+    // Cloudflare's rules: every matching block applies; "! Name" removes a header set by an earlier block; a repeated header is joined with a comma
+    for (const r of rules) if (r.re.test(p)) for (const [k, v] of r.headers) { if (k.startsWith('!')) delete headers[k.slice(1).trim()]; else headers[k] = headers[k] && k !== 'Content-Type' ? headers[k] + ', ' + v : v; }
     res.writeHead(status, headers); res.end(fs.readFileSync(file));
   });
   return new Promise(ok => server.listen(0, '127.0.0.1', () => ok({ url: 'http://127.0.0.1:' + server.address().port, close: () => server.close() })));

@@ -1,1 +1,15 @@
-{"name":"d100","private":true,"scripts":{"build":"python3 build.py","test":"node tests/flow.js dist/index.html","shots":"node tests/shoot.js dist/index.html screens"},"devDependencies":{"playwright":"^1.63.0"}}
+{
+ "name": "d100",
+ "private": true,
+ "scripts": {
+  "build": "python3 build.py && python3 build.py offline/d100-offline.html",
+  "test": "node tests/flow.js dist/index.html && BROWSER=webkit node tests/flow.js dist/index.html",
+  "audit": "node tests/audit.js dist/index.html",
+  "links": "node tests/links.js",
+  "shots": "node tests/shoot.js dist/index.html screens",
+  "icons": "node tools/make-icons.js"
+ },
+ "devDependencies": {
+  "playwright": "^1.63.0"
+ }
+}

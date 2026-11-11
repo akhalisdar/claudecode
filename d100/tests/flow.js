@@ -179,6 +179,31 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
 { const pg = await fresh(null, '#/step/s8'); await pg.click('#confirm .btn'); await pg.waitForFunction(() => location.hash.includes('stars')); await pg.waitForTimeout(150); const a = one(await pg.locator('#app .unlock span').innerText());
   await pg.goto(f + '#/stars?lang=ar'); await pg.waitForTimeout(100); await pg.context().close();
   ok('G24', a === 'Done on time: Pass the food permit inspection. Your record is now 54.', 'star screen says: "' + a + '"'); }
+/* ---------- part 3: the static build (only when the target folder is a Cloudflare Pages build, i.e. has _headers) ---------- */
+const root = path.dirname(path.resolve(target));
+if (fs.existsSync(path.join(root, '_headers'))) {
+  const get = async u => { const r = await fetch(base.origin + u, { redirect: 'manual' }); return { status: r.status, h: Object.fromEntries(r.headers), body: await r.text() }; };
+  const idx = await get('/'), html = idx.body, asset = (html.match(/assets\/app\.[0-9a-f]+\.js/) || [''])[0], as = await get('/' + asset);
+  const csp = idx.h['content-security-policy'] || '';
+  ok('P3-shell', !/base64,/.test(html) && html.length < 30000 && /<style>/.test(html) && (html.match(/rel="preload"[^>]*as="font"/g) || []).length === 2 && /<script defer src="assets\/app\.[0-9a-f]{10}\.js">/.test(html) && !/<script>/.test(html), 'index.html is a ' + Math.round(html.length / 1024) + ' KB shell: critical CSS inline, two fonts preloaded, hashed JS and CSS, no base64, no inline script');
+  ok('P3-headers', idx.h['cache-control'] === 'no-cache' && idx.h['x-robots-tag'] === 'noindex' && as.h['cache-control'] === 'public, max-age=31536000, immutable' && as.h['x-robots-tag'] === 'noindex', 'HTML: ' + idx.h['cache-control'] + '; assets: ' + as.h['cache-control'] + '; X-Robots-Tag: ' + idx.h['x-robots-tag']);
+  ok('P3-csp', /default-src 'self'/.test(csp) && /script-src 'self'(;|$)/.test(csp) && /img-src 'self' data:/.test(csp) && !/unsafe|https?:|\*/.test(csp), 'CSP allows self only (data: for images, one hashed inline style); no unsafe-inline, no other origin');
+  const pg = await fresh(null, ''); const reqs = []; pg.on('request', r => reqs.push(r.url())); const stubs = [];
+  for (const [u, to, ar] of [['/plan/', '#/roadmap'], ['/bank/', '#/bank'], ['/cash/', '#/cash'], ['/record/', '#/stars'], ['/providers/', '#/market'], ['/plans/', '#/tiers'], ['/day100/', '#/day100'], ['/ar/', '#/landing?lang=ar', 1]]) {
+    const raw = await get(u); await pg.goto(base.origin + u); await pg.waitForFunction(h => location.pathname === '/' && location.hash === h, to, { timeout: 5000 }).catch(() => {}); await pg.waitForSelector('#app .proto'); await pg.waitForTimeout(150);
+    const st = await pg.evaluate(() => ({ p: location.pathname + location.hash, dir: document.documentElement.dir, n: document.querySelectorAll('#app .view > *, #app .land > *').length }));
+    stubs.push(u + (raw.status === 200 && raw.body.includes('<a href="/' + to + '">') && st.p === '/' + to && st.n > 2 && (!ar || st.dir === 'rtl') ? ' ok' : ' FAILED (' + st.p + ')')); }
+  ok('P3-stubs', stubs.every(x => x.endsWith(' ok')), 'clean URLs are real pages with a plain link and forward to the app: ' + stubs.join(', '));
+  const nf = await get('/no-such-page'); const np = await pg.context().newPage(); await np.goto(base.origin + '/no-such-page/deeper'); await np.waitForFunction(() => location.pathname === '/', null, { timeout: 6000 }).catch(() => {}); const back = await np.evaluate(() => location.pathname); await np.close();
+  ok('P3-404', nf.status === 404 && nf.body.includes('<a href="/">') && back === '/', '404.html is served with status ' + nf.status + ', links to / and returns to the app');
+  const icons = []; for (const u of ['/favicon.ico', '/favicon.svg', '/apple-touch-icon.png', '/og.png']) icons.push((await get(u)).status); const outside = reqs.filter(u => !u.startsWith(base.origin) && !u.startsWith('data:'));
+  ok('P3-icons', icons.every(x => x === 200) && /og:image" content="https:\/\/d100\.ae\/og\.png"/.test(html) && /apple-touch-icon/.test(html) && outside.length === 0, 'favicon, apple-touch-icon and Open Graph image are served; no request left the site' + (outside.length ? ': ' + outside[0] : '')); await pg.context().close();
+  // the single-file fallback still builds and runs from a file, with no request at all
+  require('child_process').execFileSync('python3', ['build.py', 'tests/out/offline-check.html']); const cx = await b.newContext({ viewport: { width: 390, height: 844 } }); await cx.route(u => /^https?:/.test(u.href), r => r.abort()); const op = watch(await cx.newPage()); const oreq = []; op.on('request', r => { if (!r.url().startsWith('data:')) oreq.push(r.url()); });
+  await op.goto('file://' + path.resolve('tests/out/offline-check.html')); await op.waitForSelector('#app [data-act=begin]'); await op.click('#app [data-act=begin]'); await op.waitForSelector('#app .next .btn'); await op.click('#app .next .btn'); await op.waitForSelector('#confirm .btn');
+  const fok = await op.evaluate(() => document.fonts.check('600 16px "IBM Plex Serif"', 'D') && [...document.querySelectorAll('img')].every(i => i.naturalWidth > 0));
+  ok('P3-offline', oreq.length === 1 && fok, 'single-file build runs from a file with every network request blocked: ' + oreq.length + ' request (the file itself), fonts loaded'); await cx.close();
+}
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
