@@ -82,6 +82,11 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
   await pg.click('#app button.opt >> nth=3'); await pg.waitForTimeout(100); await pg.type('#own', 'Al Noor'); await pg.waitForFunction(() => !document.querySelector('#app .toast'), null, { timeout: 6000 }); await pg.waitForTimeout(100);
   const af = await pg.evaluate(() => ({ id: document.activeElement.id, v: (document.querySelector('#own') || {}).value }));
   ok('G07', hit.length === 0 && af.id === 'own' && af.v === 'Al Noor', 'toast covers nothing' + (hit.length ? ' (covers ' + hit.join(', ') + ')' : '') + '; after it goes, focus is still on #' + af.id + ' with "' + af.v + '"'); await pg.context().close(); }
+// G08 after a stamp: next screen opens at the top with focus on its heading; on the star screen the Next button is on the first screen
+{ const pg = await fresh({ viewport: { width: 390, height: 664 } }, '#/step/s7'); await pg.click('#app button.opt >> nth=0'); await pg.waitForTimeout(100); await pg.click('#confirm .btn'); await pg.waitForFunction(() => location.hash.includes('stars')); await pg.waitForTimeout(150);
+  const a = await pg.evaluate(() => { const b2 = document.querySelector('#app .unlock a.btn'), q = b2 ? b2.getBoundingClientRect() : null; return { f: document.activeElement.className, on: !!q && q.top >= 0 && q.bottom <= innerHeight, top: document.querySelector('#app .view').scrollTop }; });
+  await pg.click('#app .unlock a.btn'); await pg.waitForTimeout(200); const b3 = await pg.evaluate(() => ({ f: document.activeElement.tagName, top: document.querySelector('#app .view').scrollTop, h: location.hash }));
+  ok('G08', a.f === 'unlock' && a.on && a.top === 0 && b3.f === 'H1' && b3.top === 0, 'star screen: focus on .' + a.f + ', Next button on the first screen: ' + a.on + '; next step ' + b3.h + ': focus on ' + b3.f + ', scroll ' + b3.top); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

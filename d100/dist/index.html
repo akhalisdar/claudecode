@@ -32,6 +32,7 @@ a{color:inherit}
 svg{display:block}
 p{margin:0}
 :focus-visible{outline:3px solid var(--stamp);outline-offset:2px}
+[tabindex="-1"]:focus{outline:none}
 .num{font-variant-numeric:tabular-nums}
 .ico{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
 [dir=rtl] .flip{transform:scaleX(-1)}
@@ -213,6 +214,8 @@ details.donelist[open] summary::after{content:"\2013"}
 .unlock b{display:block;font:600 21px/1.2 var(--serif)}
 [dir=rtl] .unlock b{font:700 19px/1.4 var(--sans)}
 .unlock span{font-size:14px;color:var(--ink2)}
+.unlock span{display:block}
+.unlock .btn{margin-top:12px}
 .scoreline{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:18px}
 .scoreline b{font:600 42px/1 var(--serif);letter-spacing:-.02em}
 .scoreline b small{font:500 14px/1 var(--sans);color:var(--ink2);letter-spacing:0}
@@ -925,13 +928,13 @@ cash(){const b=bal(S.day),m=monthly(),z=zeroDay(),up=ONEOFF.filter(o=>o.d>S.day)
   return shell(bar(),h,'cash')},
 
 stars(){const sc=score(),n=starsOf(sc),nxt=THR[n],cr=CREDIT[n],nx=nextOpen(),un=['u1','u2','u3','u4','u5'];
-  const h=`${S.unlock?`<div class="unlock"><b>${t('earned',{n})}</b><span>${t('earnedP',{s:sc})}</span></div>`:''}
+  const h=`${S.unlock?`<div class="unlock"><b>${t('earned',{n})}</b><span>${t('earnedP',{s:sc})}</span>${nx?`<a class="btn" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}</div>`:''}
   <h1>${t('recT')}</h1><p class="lede">${t('plaqueSo')}</p>${plaque(n,'D100',t('day')+' '+S.day+' '+t('of100'),S.unlock)}
   <div class="scoreline"><b class="num">${sc}<small> ${t('of100')}</small></b><span>${nxt?t('nextStar',{p:nxt-sc,n:n+1}):t('top')}</span></div>
   <div class="meter"><span style="width:${sc}%"></span>${THR.map((x,i)=>`<i style="inset-inline-start:${x}%"></i><em class="${sc>=x?'hit':''}" style="inset-inline-start:${x}%">${i+1}★</em>`).join('')}</div>
   ${nxt&&nx?`<div class="rows"><a href="#/${nx.bank?'bank':'step/'+nx.id}"><span>${t('nextHow',{t:L(nx.t)})}</span><span class="amt">${plus(6)} ${I.chev.replace('class="ico','style="display:inline;vertical-align:-4px" class="ico')}</span></a></div>`:''}
   <section class="credit"><small>${t('credit')}</small>${cr?`<p>${t('creditNow')}</p><b class="num">${aed(cr)}</b><p>${CREDIT[n+1]?t('creditNext',{n:n+1,x:fmt(CREDIT[n+1])})+' ':''}${t('illus')}</p>`:`<p>${t('creditNone')}</p>`}</section>
-  ${sell('exec','upStar')}<div style="height:14px"></div>${S.unlock&&nx?`<a class="btn" style="margin-bottom:10px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}${S.unlock?`<a class="btn sec" href="#/cash">${t('seeCash')}</a>`:''}
+  ${sell('exec','upStar')}<div style="height:14px"></div>${S.unlock?`<a class="btn sec" href="#/cash">${t('seeCash')}</a>`:''}
   <h2>${t('unlockT')}</h2><div class="rows">${un.map((k,i)=>`<div class="${i+1===n?'cur':(i+1>n?'dim':'')}" style="justify-content:flex-start"><span class="sn">${'★'.repeat(i+1)}</span><span>${t(k)}</span></div>`).join('')}</div>
   <h2>${t('earnT')}</h2><div class="rows"><div><span>${t('e1')}</span><span class="amt">${plus(6)}</span></div><div><span>${t('e2')}</span><span class="amt">${plus(1)}</span></div><div><span>${t('e3')}</span><span class="amt">${plus(5)}</span></div></div>
   <p class="note">${t('noBuy')}</p>`;
@@ -1056,7 +1059,9 @@ document.addEventListener('input',e=>{const el=e.target;
   if(el.id==='own'){OWN[el.dataset.step]=el.value;save();const k=$('#confirm .btn');if(k){const ok=!!el.value.trim();k.disabled=!ok;k.textContent=ok?t('confirmPick'):t('pickFirst')}}
   if(el.id==='cap'||el.id==='capn'){const O=S._ob;O.capital=Math.max(10000,Math.min(5000000,+el.value||0));if(el.id==='cap')$('#capn').value=O.capital;else $('#cap').value=Math.min(1000000,O.capital);save()}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.target.matches('[role=link]'))e.target.click()});
-addEventListener('hashchange',()=>{render();const v=$('#app .view')||$('#app .land');if(v)v.scrollTop=0});
+/* after a move to another screen: start at the top and put focus on its heading, so a screen reader announces where the judge landed */
+function focusHead(){const el=$('#app .unlock')||$('#app h1')||$('#app .dayhead');if(!el)return;el.setAttribute('tabindex','-1');try{el.focus({preventScroll:true})}catch(e){el.focus()}}
+addEventListener('hashchange',()=>{render();const v=$('#app .view')||$('#app .land');if(v)v.scrollTop=0;focusHead()});
 addEventListener('resize',()=>{const w=matchMedia('(min-width:900px)').matches;if(w!==wide)render()});
 /* first visit: a phone set to Arabic opens in Arabic. A saved choice or ?lang= in the link wins. */
 if(!load()&&/^ar\b/i.test(navigator.language||''))lang='ar';
