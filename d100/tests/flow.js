@@ -59,6 +59,15 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
 { const bad = []; for (const r of ['tiers', 'cash', 'stars', 'step/s7?s=warn', 'roadmap', 'day100', 'nudges']) { await p.goto(`${f}#/${r}${r.includes('?') ? '&' : '?'}lang=ar`); await w(60);
     bad.push(...await p.evaluate(() => { const o = []; const tw = document.createTreeWalker(document.querySelector('#app'), NodeFilter.SHOW_TEXT); let n; while ((n = tw.nextNode())) { if (!/[\u0600-\u06FF]/.test(n.nodeValue)) continue; const e = n.parentElement, ls = e.closest('svg') ? (e.getAttribute('letter-spacing') || '0') : getComputedStyle(e).letterSpacing; if (ls !== 'normal' && parseFloat(ls) !== 0) o.push(n.nodeValue.trim().slice(0, 16) + ' ' + ls); } return o; })); }
   ok('G04', bad.length === 0, 'no letter-spacing on Arabic text' + (bad.length ? ': ' + bad.slice(0, 3).join(', ') : '')); }
+// G05 progress and language survive a refresh; the landing button does not wipe them; Reset in More does
+{ const pg = await fresh(); const cnt = () => pg.evaluate(() => (document.querySelector('#app .dayhead .m b') || {}).textContent || ''); const ww = ms => pg.waitForTimeout(ms);
+  await pg.click('#app [data-act=begin]'); await ww(150); await pg.click('#app .next .btn'); await ww(150); await pg.click('#app button.opt >> nth=0'); await ww(100); await pg.click('#confirm .btn'); await pg.waitForFunction(() => location.hash.includes('stars')); await ww(100);
+  await pg.goto(f + '#/roadmap'); await ww(150); const a = await cnt(); await pg.click('#app .lang'); await ww(150); await pg.reload(); await pg.waitForSelector('#app .dayhead'); await ww(150);
+  const st = await pg.evaluate(() => ({ dir: document.documentElement.dir, lang: document.documentElement.lang, key: Object.keys(localStorage).join(',') })); const bAr = await cnt(); await pg.click('#app .lang'); await ww(150); const bb = await cnt();
+  await pg.goto(f + '#/landing'); await ww(150); await pg.click('#app [data-act=begin]'); await ww(250); const c2 = await cnt();
+  await pg.goto(f + '#/more'); await ww(150); await pg.click('#app [data-act=reset]'); await ww(250); const d2 = await cnt(); await pg.reload(); await pg.waitForSelector('#app .dayhead'); await ww(150); const e2 = await cnt();
+  ok('G05', /^7 /.test(a) && bb === a && st.dir === 'rtl' && st.key === 'd100:v1' && /7/.test(bAr), 'refresh keeps progress ("' + a + '" -> "' + bb + '") and language (' + st.lang + ') under key ' + st.key);
+  ok('G05', c2 === a, 'the landing button keeps progress: "' + c2 + '"'); ok('G05', /^6 /.test(d2) && e2 === d2, 'Reset in More goes back to Layla day 37 and stays there after a refresh: "' + e2 + '"'); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

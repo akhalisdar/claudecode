@@ -57,6 +57,14 @@ const sents=s=>{const o=[];let a=0;for(let i=0;i<s.length-1;i++)if('.!؟'.indexO
 const plus=n=>'<bdi dir="ltr">+'+n+'</bdi>';
 const DEF_BIZ='Sidr Specialty Coffee', DEF_BIZ_AR='سدر للقهوة المختصة';
 let CK={},VIS={},OWN={};
+/* ---------- saved state: survives a refresh and iOS reloading the tab. Versioned key; "Reset" in More wipes it. ---------- */
+const KEY='d100:v1';
+function save(){try{const c=Object.assign({},S);delete c.slam;delete c.warn;delete c.sheet;localStorage.setItem(KEY,JSON.stringify({S:c,lang,VIS,OWN,cat}))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');
+  if(!d||!d.S||typeof d.S.done!=='object'||typeof d.S.picks!=='object'||!(d.S.day>=1))return false;
+  S=Object.assign(demo(),d.S,{slam:null,warn:null,sheet:null,unlock:0});if(!Array.isArray(S.extra))S.extra=[];
+  lang=d.lang==='ar'?'ar':'en';VIS=d.VIS||{};OWN=d.OWN||{};if(P[d.cat])cat=d.cat;return true}catch(e){return false}}
+function wipe(){try{localStorage.removeItem(KEY)}catch(e){}}
 /* Official logo files go here once you have the right to use them, e.g. up:'logos/up.svg'. Empty = name tile. */
 const LOGOS=/*LOGOS*/{};
 const BANKS=[{id:'up',n:'UP by CBD',m:'UP',u:'https://www.cbd.ae',rec:1},{id:'enbd',n:'Emirates NBD',m:'ENBD',u:'https://www.emiratesnbd.com'},{id:'adib',n:'ADIB',m:'ADIB',u:'https://www.adib.ae'},
@@ -164,7 +172,7 @@ function opt(p,stepId){const on=stepId&&S.picks[stepId]===p.id,lock=!stepId||S.d
   return lock?`<div class="opt${on?' on':''}${stepId?'':' flat'}">${inner}</div>`:`<button class="opt" role="radio" aria-checked="${!!on}" data-act="pick:${stepId}:${p.id}">${inner}</button>`}
 const whyText=s=>L(s.w).replace('{ct}',dateAt(1,3));
 function landBody(){return `<h1 class="hl"><span>${t('h1a')}</span> <span>${t('h1b')}</span></h1><p class="lede">${t('lede')}</p>${licence()}
-  <div class="cta"><a class="btn" href="#/roadmap" data-act="demo">${t('start')}</a><a class="link" href="#/start">${t('own')}</a></div>
+  <div class="cta"><a class="btn" href="#/roadmap" data-act="begin">${t('start')}</a><a class="link" href="#/start">${t('own')}</a></div>
   <h2>${t('datesT')}</h2><div class="dates">${[[14,'dt1','dc1',0],[45,'dt2','dc2',0],[90,'dt3','dc3',1]].map(d=>`<div><b class="num"><span class="dk">${t('dayK')}</span>${d[0]}</b><span><strong>${t(d[1])}</strong><small class="${d[3]?'r':''}">${t(d[2])}</small></span></div>`).join('')}</div>
   <h2 class="looph">${t('loopT')}</h2><ol class="loop"><li><b>1</b>${t('loop1')}</li><li><b>2</b>${t('loop2')}</li><li><b>3</b>${t('loop3')}</li></ol>
   <div class="proof"><span>${t('proof1')}</span><span>${t('proof3')}</span><span>${t('partners')}</span></div>${LOGOS.cbd?`<div class="byc"><img src="${LOGOS.cbd}" alt="Commercial Bank of Dubai"><span>${t('byCbd')}</span></div>`:''}`}
@@ -306,7 +314,7 @@ day100(){const h=`<h1>${t('dT')}</h1><p class="lede">${t('dS',{b:esc(bizName())}
 more(){const r=(href,l,act)=>`<a href="${href}" ${act?`data-act="${act}"`:''}><span>${l}</span>${I.chev}</a>`;
   const h=`<h1>${t('mT')}</h1>
   <div class="rows" style="margin-top:12px">${r('#/programmes',t('mProg'))}${r('#/nudges',t('mNudge'))}${r('#/tiers',t('mPlans'))}${r('#/day100',t('mDay'))}${r('#/bank',t('mBank'))}${r('#/shots',t('mShots'))}</div>
-  <h2>${t('mDemo')}</h2><div class="rows">${r('#/roadmap',t('mReset'),'demo')}${r('#/start',t('mFresh'))}${S.day<37?r('#/roadmap',t('mJump'),'jump'):''}</div>
+  <h2>${t('mDemo')}</h2><div class="rows">${r('#/roadmap',t('mReset'),'reset')}${r('#/start',t('mFresh'))}${S.day<37?r('#/roadmap',t('mJump'),'jump'):''}</div>
   <p class="note">${t('partners')}</p>`;
   return shell(bar(),h,'more')}
 };
@@ -343,7 +351,7 @@ function render(){
   app.dataset.route=key;
   const v=$('.view',app)||$('.land',app);if(v&&keep)v.scrollTop=keep;
   if(open){const d=$('details.donelist',app);if(d)d.open=true}
-  pitch();
+  pitch();save();
 }
 function shots(){const el=$('#shots');el.dir=rtl()?'rtl':'ltr';
   el.innerHTML=`<header><h1>${t('shotsT')}</h1><div class="cta"><button class="link" data-act="lang">${t('other')}</button><a class="btn" href="#/">${t('backApp')}</a></div></header>
@@ -357,21 +365,22 @@ document.addEventListener('click',e=>{
   const [a,b,c]=el.dataset.act.split(':');
   if(a==='lang'){lang=rtl()?'en':'ar';if(location.hash.includes('lang=')){e.preventDefault();go(location.hash.replace(/([?&])lang=\w+/,'$1lang='+lang));return}render();return}
   if(a==='open'){go('#/'+el.dataset.act.slice(5));return}
-  if(a==='demo'){S=demo();CK={};VIS={};OWN={};toast=null;setTimeout(render,0);return}
+  if(a==='begin'){if(!S.touched){S=demo();CK={};VIS={};OWN={}}toast=null;setTimeout(render,0);return}
+  if(a==='reset'){S=demo();CK={};VIS={};OWN={};toast=null;wipe();setTimeout(render,0);return}
   if(a==='jump'){S=demo({biz:S.biz,activity:S.activity,emirati:S.emirati,capital:S.capital});setTimeout(render,0);return}
   if(a==='ob'){const O=S._ob,i=$('#biz');if(i)O.biz=i.value;O[b]=c==='true'?true:c==='false'?false:(b==='capital'?+c:c);render();return}
   if(a==='build'){const O=S._ob||{},i=$('#biz'),biz=(i&&i.value.trim())||DEF_BIZ;
-    S=fresh({biz,activity:O.activity||'cafe',emirati:O.emirati!==false,capital:O.capital||150000});CK={};VIS={};OWN={};go('#/building');return}
+    S=fresh({biz,activity:O.activity||'cafe',emirati:O.emirati!==false,capital:O.capital||150000,touched:1});CK={};VIS={};OWN={};go('#/building');return}
   if(a==='cat'){cat=b;render();return}
-  if(a==='pick'){S.picks[b]=c;render();setTimeout(()=>{const o=$('#own'),k=$('#confirm');if(c==='own'&&o)o.focus();else if(k)k.scrollIntoView({behavior:'smooth',block:'end'})},40);return}
-  if(a==='visit'){VIS[b]=1;setTimeout(render,400);return}
+  if(a==='pick'){S.touched=1;S.picks[b]=c;render();setTimeout(()=>{const o=$('#own'),k=$('#confirm');if(c==='own'&&o)o.focus();else if(k)k.scrollIntoView({behavior:'smooth',block:'end'})},40);return}
+  if(a==='visit'){S.touched=1;VIS[b]=1;save();setTimeout(render,400);return}
   if(a==='check'){CK[b]=!CK[b];render();return}
-  if(a==='bankpick'){S.bankPick=b;render();return}
+  if(a==='bankpick'){S.touched=1;S.bankPick=b;render();return}
   if(a==='sheet'){S.sheet=b||null;render();return}
   if(a==='warn'){S.warn=b||null;render();return}
-  if(a==='skip'){SK()[b]=S.day;S.warn=null;const nx=nextOpen();say('toastSkip');go(nx?hrefOf(nx):'#/roadmap');return}
+  if(a==='skip'){S.touched=1;SK()[b]=S.day;S.warn=null;const nx=nextOpen();say('toastSkip');go(nx?hrefOf(nx):'#/roadmap');return}
   if(a==='toast'){say(b);render();return}
-  if(a==='done'){if(S.slam)return;const s=stepById(b);if(blockers(s).length)return;const before=starsOf(score());S.done[b]=S.day;delete SK()[b];
+  if(a==='done'){if(S.slam)return;const s=stepById(b);if(blockers(s).length)return;const before=starsOf(score());S.touched=1;S.done[b]=S.day;delete SK()[b];
     if(s.cat&&S.picks[b]){const p=P[s.cat].find(x=>x.id===S.picks[b]);if(p&&p.mo)S.extra.push({n:p.n,mo:p.mo})}
     const after=starsOf(score()),calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
     S.slam={day:S.day};render();
@@ -379,11 +388,13 @@ document.addEventListener('click',e=>{
     return}
 });
 document.addEventListener('input',e=>{const el=e.target;
-  if(el.id==='own'){OWN[el.dataset.step]=el.value;const k=$('#confirm .btn');if(k){const ok=!!el.value.trim();k.disabled=!ok;k.textContent=ok?t('confirmPick'):t('pickFirst')}}
-  if(el.id==='cap'||el.id==='capn'){const O=S._ob;O.capital=Math.max(10000,Math.min(5000000,+el.value||0));if(el.id==='cap')$('#capn').value=O.capital;else $('#cap').value=Math.min(1000000,O.capital)}});
+  if(el.id==='own'){OWN[el.dataset.step]=el.value;save();const k=$('#confirm .btn');if(k){const ok=!!el.value.trim();k.disabled=!ok;k.textContent=ok?t('confirmPick'):t('pickFirst')}}
+  if(el.id==='cap'||el.id==='capn'){const O=S._ob;O.capital=Math.max(10000,Math.min(5000000,+el.value||0));if(el.id==='cap')$('#capn').value=O.capital;else $('#cap').value=Math.min(1000000,O.capital);save()}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.target.matches('[role=link]'))e.target.click()});
 addEventListener('hashchange',()=>{render();const v=$('#app .view')||$('#app .land');if(v)v.scrollTop=0});
 addEventListener('resize',()=>{const w=matchMedia('(min-width:900px)').matches;if(w!==wide)render()});
+/* first visit: a phone set to Arabic opens in Arabic. A saved choice or ?lang= in the link wins. */
+if(!load()&&/^ar\b/i.test(navigator.language||''))lang='ar';
 render();
 })();
 </script>
