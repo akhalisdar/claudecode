@@ -70,9 +70,11 @@ function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'null');
 function wipe(){try{localStorage.removeItem(KEY)}catch(e){}}
 /* Official logo files go here once you have the right to use them, e.g. up:'logos/up.svg'. Empty = name tile. */
 const LOGOS=/*LOGOS*/{};
-const BANKS=[{id:'up',n:'UP by CBD',m:'UP',u:'https://www.cbd.ae',rec:1},{id:'enbd',n:'Emirates NBD',m:'ENBD',u:'https://www.emiratesnbd.com'},{id:'adib',n:'ADIB',m:'ADIB',u:'https://www.adib.ae'},
- {id:'mashreq',n:'Mashreq',m:'M',u:'https://www.mashreq.com'},{id:'rak',n:'RAKBANK',m:'RAK',u:'https://www.rakbank.ae'},{id:'wio',n:'Wio Bank',m:'Wio',u:'https://www.wio.io'},
- {id:'dib',n:'Dubai Islamic Bank',m:'DIB',u:'https://www.dib.ae'},{id:'adcb',n:'ADCB',m:'ADCB',u:'https://www.adcb.com'},{id:'fab',n:'First Abu Dhabi Bank',m:'FAB',u:'https://www.bankfab.com'}];
+/* w,h: the size each logo is shown at, in CSS px. Chosen so the nine marks carry about the same optical weight (same area, corrected for how much ink the mark has),
+   and so every file has at least 3 device pixels per CSS pixel. The files themselves are untouched. */
+const BANKS=[{id:'up',n:'UP by CBD',m:'UP',u:'https://www.cbd.ae',rec:1,w:68,h:31},{id:'enbd',n:'Emirates NBD',m:'ENBD',u:'https://www.emiratesnbd.com',w:92,h:25},{id:'adib',n:'ADIB',m:'ADIB',u:'https://www.adib.ae',w:92,h:16},
+ {id:'mashreq',n:'Mashreq',m:'M',u:'https://www.mashreq.com',w:92,h:24},{id:'rak',n:'RAKBANK',m:'RAK',u:'https://www.rakbank.ae',w:92,h:14},{id:'wio',n:'Wio Bank',m:'Wio',u:'https://www.wio.io',w:68,h:26},
+ {id:'dib',n:'Dubai Islamic Bank',m:'DIB',u:'https://www.dib.ae',w:92,h:22},{id:'adcb',n:'ADCB',m:'ADCB',u:'https://www.adcb.com',w:80,h:24},{id:'fab',n:'First Abu Dhabi Bank',m:'FAB',u:'https://www.bankfab.com',w:54,h:32}];
 const LINK={det:'https://www.investindubai.gov.ae',dm:'https://www.dm.gov.ae',dld:'https://dubailand.gov.ae',fta:'https://tax.gov.ae',mof:'https://mof.gov.ae',box:'https://sme.ae'};
 const PLINK={esp:'https://sme.ae',mbrf:'https://sme.ae',box:'https://sme.ae'};
 const PRE={cafe:{s4:['s3'],s5:['s4'],s6:['s4'],s8:['s5','s6'],s9:['s2'],s11:['s8'],s13:['s9'],s15:['s11']},shop:{s5:['s4'],s8:['s5'],s9:['s2'],s11:['s8'],s13:['s9'],s15:['s11']}};
@@ -180,7 +182,7 @@ function landBody(pinned){return `<h1 class="hl"><span>${t('h1a')}</span> <span>
   <div class="cta">${pinned?'':`<a class="btn" href="#/roadmap" data-act="begin">${t('start')}</a>`}<a class="link" href="#/start">${t('own')}</a></div>
   <h2>${t('datesT')}</h2><div class="dates">${[[14,'dt1','dc1',0],[45,'dt2','dc2',0],[90,'dt3','dc3',1]].map(d=>`<div><b class="num"><span class="dk">${t('dayK')}</span>${d[0]}</b><span><strong>${t(d[1])}</strong><small class="${d[3]?'r':''}">${t(d[2])}</small></span></div>`).join('')}</div>
   <h2 class="looph">${t('loopT')}</h2><ol class="loop"><li><b>1</b>${t('loop1')}</li><li><b>2</b>${t('loop2')}</li><li><b>3</b>${t('loop3')}</li></ol>
-  <div class="proof"><span>${t('proof1')}</span><span>${t('proof3')}</span><span>${t('partners')}</span></div>${LOGOS.cbd?`<div class="byc"><img src="${LOGOS.cbd}" alt="Commercial Bank of Dubai"><span>${t('byCbd')}</span></div>`:''}`}
+  <div class="proof"><span>${t('proof1')}</span><span>${t('proof3')}</span><span>${t('partners')}</span></div>${LOGOS.cbd?`<div class="byc"><img src="${LOGOS.cbd}" width="118" height="26" alt="Commercial Bank of Dubai"><span>${t('byCbd')}</span></div>`:''}`}
 
 /* ---------- screens ---------- */
 const SC={
@@ -232,7 +234,7 @@ step(id){const st=steps(),s=stepById(id)||nextOpen()||st[0],dn=S.done[s.id],pv=s
 bank(){const st=steps(),dn=S.done.s2,pk=S.bankPick||'up',bk=BANKS.find(x=>x.id===pk)||BANKS[0],seen=VIS.s2,nx=nextOpen();
   let foot='',h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:2,m:st.length})}</b>${t('sep')}${t('dueDay',{d:7}).toLowerCase()}</p><h1>${t('bankT')}</h1><p class="body">${L(st[1].w)}</p>${!dn&&SK().s2?`<p class="note">${t('skOn',{d:SK().s2})}</p>`:''}`;
   if(dn)h+=`<p class="note">${t('bkDone',{d:dn})}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}`;
-  else h+=`<div class="banks" role="radiogroup">${BANKS.map(x=>`<button class="bk" role="radio" aria-checked="${pk===x.id}" data-act="bankpick:${x.id}">${LOGOS[x.id]?`<img${x.id==='up'?' class="dk"':''} src="${LOGOS[x.id]}" alt="${x.n}">`:`<span class="mono">${x.m}</span><span>${x.n}</span>`}${x.rec?`<small>${t('recommended')}</small>`:''}</button>`).join('')}</div>
+  else h+=`<div class="banks" role="radiogroup">${BANKS.map(x=>`<button class="bk" role="radio" aria-checked="${pk===x.id}" data-act="bankpick:${x.id}">${LOGOS[x.id]?`<img${x.id==='up'?' class="dk"':''} src="${LOGOS[x.id]}" width="${x.w}" height="${x.h}" alt="${x.n}">`:`<span class="mono">${x.m}</span><span>${x.n}</span>`}${x.rec?`<small>${t('recommended')}</small>`:''}</button>`).join('')}</div>
    <p class="note" style="margin-top:8px">${pk==='up'?t('propPartner')+'. ':''}${t('notPartners')}</p>
    <a class="btn${seen?' sec':''}" style="margin-top:16px" href="${bk.u}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bk.n})}${I.ext}</a><p class="note">${t('goesTo',{h:bk.u.replace(/^https?:\/\/(www\.)?/,'')})}</p>
    <details class="learn"><summary>${t(pk==='up'?'bkWhat':'learn')}</summary>${pk==='up'?`<ul>${['bk1','bk2','bk3'].map(k=>`<li>${t(k)}</li>`).join('')}</ul><p class="note">${t('bkSrc')}</p>`:`<p>${t('anyP')}</p>`}</details>`,foot=`<button class="btn${seen?'':' sec'}" data-act="done:s2">${seen?t('iDid'):t('already')}</button>${skipBtn(st[1])}`;

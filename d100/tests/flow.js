@@ -151,6 +151,12 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
 // G20 plaque captions are full-strength ink on brass (was 80%, 4.36:1)
 { await p.goto(f + '#/stars?lang=en'); await w(100); const a = await p.evaluate(() => [...document.querySelectorAll('#app .plaque text')].map(t2 => getComputedStyle(t2).opacity + ' ' + getComputedStyle(t2).fill).join(' | '));
   ok('G20', a.split(' | ').length === 3 && a.split(' | ').every(x => x.startsWith('1 ')), 'plaque text: ' + a); }
+// G21 bank logos: similar optical size, sharp at 3x, alt text on each; the CBD logo on the landing page is sharp at 3x
+{ const pg = await fresh({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 }, '#/bank?s=new'); await pg.waitForTimeout(200);
+  const im = await pg.evaluate(() => [...document.querySelectorAll('#app .bk img')].map(i => { const r = i.getBoundingClientRect(); return { alt: i.alt, area: Math.round(r.width * r.height), sharp: i.naturalWidth >= r.width * 3 * .98, inside: r.width <= i.parentElement.clientWidth }; }));
+  const areas = im.map(i => i.area), ratio = Math.max(...areas) / Math.min(...areas);
+  await pg.goto(f + '#/landing'); await pg.waitForTimeout(200); const cbd = await pg.evaluate(() => { const i = document.querySelector('#app .byc img'), r = i.getBoundingClientRect(); return { sharp: i.naturalWidth >= r.width * 3 * .98, w: i.naturalWidth, shown: Math.round(r.width), alt: i.alt }; });
+  ok('G21', im.length === 9 && im.every(i => i.alt && i.sharp && i.inside) && ratio < 1.9 && cbd.sharp && !!cbd.alt, 'nine logos with alt text, all sharp at 3x, largest to smallest area ' + ratio.toFixed(2) + ':1 (was 3.5:1); CBD logo ' + cbd.w + 'px for a ' + cbd.shown + 'px slot'); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
