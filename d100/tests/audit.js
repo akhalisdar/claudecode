@@ -88,7 +88,7 @@ function inPage(o) {
   const all = txt(app);
   if (/undefined|NaN|\{[a-z]+\}|\[object/.test(all)) add('bad-text', (all.match(/.{0,20}(undefined|NaN|\{[a-z]+\}|\[object).{0,20}/) || [''])[0], app);
   if (!isShots) { const pr = app.querySelector('.proto'); if (!pr || !vis(pr)) add('no-prototype-banner', 'the "Hackathon prototype" line is missing', app); }
-  if (/\u0627\u064B/.test(all)) add('arabic-tanween-after-alef', 'alef + fathatan lifts the whole word off the baseline in WebKit with IBM Plex Sans Arabic: ' + (all.match(/\S*\u0627\u064B\S*/g) || []).slice(0, 4).join(' '), app);
+  if (/\u0627\u064B|\u0644\u064B\u0627/.test(all)) add('arabic-tanween-after-alef', 'alef + fathatan (or fathatan inside a lam-alef) lifts the word off the baseline in WebKit with IBM Plex Sans Arabic: ' + (all.match(/\S*(\u0627\u064B|\u0644\u064B\u0627)\S*/g) || []).slice(0, 4).join(' '), app);
   if (/[٠-٩۰-۹]/.test(all)) add('eastern-numerals', (all.match(/.{0,12}[٠-٩۰-۹]+.{0,12}/) || [''])[0], app);
 
   // horizontal overflow

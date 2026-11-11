@@ -19,4 +19,4 @@ Every `اً` (alef, then fathatan) is now `ًا` (fathatan on the letter before,
 
 The same change applies to: اسمًا، افتراضيًا، غدًا، واحدًا، انطلاقًا، بنكًا، اعتبارًا، إلزاميًا، شهرًا، أيامًا، مبكرًا، طلبًا، موظفًا، درهمًا، مشروعًا، بريدًا، إلكترونيًا، مرشدًا، منتجًا، مستندًا.
 
-One thing to look at on your iPhone: `أولًا` (in "اختر مزوّدًا أولًا" on a provider step, and "أنجز هذه أولًا" on a locked step). On the Linux build of WebKit the mark sits on the lam-alef instead of above it. Chromium draws it correctly and I expect iOS to as well, but I could not check on a real phone. If it looks wrong there, the fix is to write it without the mark: `أولا`.
+One word is different: `أولاً` is now `أولا`, with no mark (in "اختر مزوّدًا أولا" on a provider step and "أنجز هذه أولا" on a locked step). With the mark between the lam and the alef (`أولًا`), WebKit lifted the word off the baseline again, and that string is the main button on every provider step. If you would rather keep the mark, check `أولًا` on a real iPhone first: I could only test on the Linux build of WebKit.
