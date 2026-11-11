@@ -52,6 +52,8 @@ Object.assign(TX.ar,{
 });
 
 const rtl=()=>lang==='ar';
+/* first sentence splitter. No regex lookbehind: Safari before iOS 16.4 cannot parse one. */
+const sents=s=>{const o=[];let a=0;for(let i=0;i<s.length-1;i++)if('.!؟'.indexOf(s[i])>-1&&/\s/.test(s[i+1])){o.push(s.slice(a,i+1));a=i+2}o.push(s.slice(a));return o};
 const plus=n=>'<bdi dir="ltr">+'+n+'</bdi>';
 const DEF_BIZ='Sidr Specialty Coffee', DEF_BIZ_AR='سدر للقهوة المختصة';
 let CK={},VIS={},OWN={};
@@ -190,7 +192,7 @@ roadmap(){const st=steps(),nx=nextOpen(),done=st.filter(s=>S.done[s.id]),sk=st.f
   let h=`<div class="dayhead"><div class="d"><small>${t('day')}</small><span class="num">${S.day}</span> <i>${t('of100')}</i></div>
    <div class="m"><b>${t('stepsDone',{n:done.length,m:st.length})}</b>${hard?`${t('nextDue')}: ${t('dueDay',{d:hard.due})}`:''}</div></div>${ruler()}`;
   if(nx){const n=nx.due-S.day;h+=`<section class="next"><div class="k"><span>${t('doNext')}</span><span class="${n<=1?'r':''}">${t('dueDay',{d:nx.due})}${t('sep')}${when(n).toLowerCase()}</span></div>
-   <h3>${L(nx.t)}</h3><p>${whyText(nx).split(/(?<=[.!؟])\s/)[0]}</p><a class="btn" href="#/${nx.bank?'bank':'step/'+nx.id}">${t('openStep')}</a></section>`}
+   <h3>${L(nx.t)}</h3><p>${sents(whyText(nx))[0]}</p><a class="btn" href="#/${nx.bank?'bank':'step/'+nx.id}">${t('openStep')}</a></section>`}
   else if(sk.length)h+=`<section class="next"><h3>${t('skLeft',{n:sk.length})}</h3><a class="btn" href="${hrefOf(sk[0])}">${t('openStep')}</a></section>`;
   else h+=`<section class="next"><h3>${t('allDone')}</h3><a class="btn" href="#/day100">${t('mDay')}</a></section>`;
   if(sk.length)h+=`<h2 class="sk">${t('skT')} (${sk.length})</h2>${sk.map(stepRow).join('')}`;
@@ -199,7 +201,7 @@ roadmap(){const st=steps(),nx=nextOpen(),done=st.filter(s=>S.done[s.id]),sk=st.f
   return shell(bar(),h,'roadmap')},
 
 step(id){const st=steps(),s=stepById(id)||nextOpen()||st[0],dn=S.done[s.id],pv=s.cat?P[s.cat]:null,pk=S.picks[s.id],n=s.due-S.day,fine=s.fine?aed(s.fine):(s.fineTxt?L(s.fineTxt):''),
-   lk=LINK[s.a],pre=blockers(s),w=whyText(s).split(/(?<=[.!؟])\s/),own=pk==='own',okPick=pk&&(!own||(OWN[s.id]||'').trim()),seen=VIS[s.id];
+   lk=LINK[s.a],pre=blockers(s),w=sents(whyText(s)),own=pk==='own',okPick=pk&&(!own||(OWN[s.id]||'').trim()),seen=VIS[s.id];
   const learn=`<details class="learn"><summary>${t('learn')}</summary>${w.length>1?`<p>${w.slice(1).join(' ')}</p>`:''}<b>${t('need')}</b><ul>${s.d.map(x=>`<li>${L(x)}</li>`).join('')}</ul>${pv?`<p class="note">${t('sample')}</p>`:''}${s.soft?`<p class="note">${t('sampleStep')}</p>`:''}<p class="note">${t('pilotNote')}</p></details>`;
   let h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:st.indexOf(s)+1,m:st.length})}</b>${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}${dn||s.auto?'':t('sep')+when(n).toLowerCase()}</p><h1>${L(s.t)}</h1>
    <p class="body">${w[0]}</p>${fine?`<p class="risk">${t('missed')}: ${fine}</p>`:''}${!dn&&SK()[s.id]?`<p class="note">${t('skOn',{d:SK()[s.id]})}</p>`:''}`;
