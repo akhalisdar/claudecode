@@ -423,6 +423,7 @@ document.addEventListener('click',e=>{
     return}
 });
 document.addEventListener('input',e=>{const el=e.target;
+  if(el.id==='biz'&&S._ob){S._ob.biz=el.value;save()}
   if(el.id==='own'){OWN[el.dataset.step]=el.value;save();const k=$('#confirm .btn');if(k){const ok=!!el.value.trim();k.disabled=!ok;k.textContent=ok?t('confirmPick'):t('pickFirst')}}
   /* capital: field and slider share one range. The field is text with thousands separators; Arabic-Indic digits from an Arabic keyboard are read as numbers. */
   if(el.id==='cap'){const O=S._ob;O.capital=+el.value;$('#capn').value=fmt(O.capital);save()}

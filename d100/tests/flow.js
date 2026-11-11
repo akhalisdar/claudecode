@@ -140,6 +140,9 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
   await pg.goto(f + '#/step/s12'); await ww(200); const bb = await pg.locator('#confirm .btn').boundingBox(); await pg.mouse.click(bb.x + 40, bb.y + 20); await pg.mouse.click(bb.x + 40, bb.y + 20); await pg.waitForFunction(() => !document.querySelector('#app .slam') && !location.hash.includes('s12'), null, { timeout: 6000 }); await pg.mouse.click(bb.x + 40, bb.y + 20); await ww(300); await pg.goto(f + '#/roadmap'); await ww(200);
   const cnt = await pg.evaluate(() => document.querySelector('#app .dayhead .m b').textContent), ta = await pg.evaluate(() => getComputedStyle(document.querySelector('#app .btn')).touchAction);
   ok('G17', a.h === '#/step/s7' && !a.sheet && /^7 /.test(cnt) && ta === 'manipulation', 'double tap on Skip anyway lands on ' + a.h + ' with no new warning; triple tap on the stamp button stamps one step ("' + cnt + '"); touch-action: ' + ta); await pg.context().close(); }
+// G18 a typed business name survives a language switch and a refresh
+{ const pg = await fresh(null, '#/start'); await pg.fill('#biz', 'Noor Atelier'); await pg.click('#app .lang'); await pg.waitForTimeout(150); const a = await pg.inputValue('#biz'); await pg.reload(); await pg.waitForSelector('#biz'); const b3 = await pg.inputValue('#biz');
+  ok('G18', a === 'Noor Atelier' && b3 === 'Noor Atelier', 'business name after a language switch: "' + a + '", after a refresh: "' + b3 + '"'); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
