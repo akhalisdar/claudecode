@@ -113,6 +113,10 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
   await pg.evaluate(() => { window.__hid = false; document.dispatchEvent(new Event('visibilitychange')); }); await ww(120); const lBack = await lbl();
   await pg.reload(); await pg.waitForSelector('#confirm .btn'); await ww(150); const lReload = await lbl();
   ok('G11', l0 === 'I have already done this' && lAway === l0 && lBack === 'Done. Stamp it' && lReload === 'Done. Stamp it' && !/setTimeout\(render,\s*400\)/.test(code) && /pageshow/.test(code), 'button stays "' + lAway + '" while away, reads "' + lBack + '" on return and after a reload'); await pg.context().close(); }
+// G12 landscape: buttons on screen, content keeps at least 110px, nothing scrolls sideways; sides padded for the notch
+{ const res = []; for (const [vw, vh] of [[668, 320], [844, 390]]) { const pg = await fresh({ viewport: { width: vw, height: vh } }, '#/step/s9');
+    res.push(await pg.evaluate(() => { const v = document.querySelector('#app .view').getBoundingClientRect(), t = document.querySelector('#app .tabs').getBoundingClientRect(); const cut = [...document.querySelectorAll('#confirm button')].filter(b2 => { const q = b2.getBoundingClientRect(); return q.top < v.bottom - 1 || q.bottom > t.top + 1 || q.height < 44; }).length; return { free: Math.round(v.height), cut, tabs: t.bottom <= innerHeight + .5, side: document.documentElement.scrollWidth <= innerWidth }; })); await pg.context().close(); }
+  ok('G12', res.every(r => r.free >= 110 && !r.cut && r.tabs && r.side) && /\.app\{[^}]*safe-area-inset-left/.test(code), 'landscape: ' + res.map(r => r.free + 'px of content, buttons whole: ' + !r.cut).join(' | ') + '; left and right safe-area padding present'); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
