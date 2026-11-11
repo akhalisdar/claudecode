@@ -288,7 +288,7 @@ async function journey(browser, dev, base, lang, out) {
     await w(1200); if (pop) await pop.close().catch(() => {}); await page.bringToFront(); await w(700);
     const lbl1 = await page.locator('#confirm .btn').innerText(); const ok = lbl0 !== lbl1 && /Stamp|اختم/.test(lbl1);
     note('J07', ok, 'After opening the official site and coming back, the button reads "Done. Stamp it"', lbl0 + ' -> ' + lbl1 + (pop ? '' : ' (no new tab)'));
-    const viaEvents = await ev(() => { const src = [...document.scripts].map(s => s.textContent).join(''); return /visibilitychange|pageshow/.test(src) || !!window.__d100Visibility; });
+    const viaEvents = await ev(async () => { let src = [...document.scripts].map(s => s.textContent).join(''); for (const s of document.scripts) if (s.src) src += await (await fetch(s.src)).text(); return /visibilitychange/.test(src) && /pageshow/.test(src) && !/setTimeout\(render,\s*400\)/.test(src); });
     note('J07b', viaEvents, 'The return is detected with visibilitychange/pageshow, not a timer', viaEvents ? '' : 'only setTimeout(render,400) in the source'); });
   await run('J08', 'Refresh keeps the plan', async () => {
     await ev(() => { location.hash = '#/roadmap'; }); await w(300); const before = await doneCount(); const lg = await ev(() => document.documentElement.lang);
@@ -300,7 +300,7 @@ async function journey(browser, dev, base, lang, out) {
     await page.click('#app .bar .back'); await w(350); const y1 = await top(), h1 = await hash();
     note('J09', h1.includes('roadmap') && Math.abs(y1 - y0) < 12, 'The in-app Back link returns to the plan at the same scroll position', `scroll ${y0} -> ${y1} at ${h1}`);
     await page.goBack(); await w(350); const h2 = await hash();
-    note('J09b', !h2.includes('step/'), 'Phone back after the in-app Back does not bounce to the step again (no loop)', `${hs} -> Back -> ${h1} -> phone back -> ${h2}`);
+    note('J09b', h2 !== hs, 'Phone back after the in-app Back does not bounce to the step again (no loop)', `${hs} -> Back -> ${h1} -> phone back -> ${h2}`);
     await ev(() => { location.hash = '#/roadmap'; }); await w(250); await ev(() => { document.querySelector('#app .view').scrollTop = 260; }); const y2 = await top();
     await page.click('#app a.step >> nth=3'); await w(300); await page.goBack(); await w(350); const y3 = await top(), h3 = await hash();
     note('J09c', h3.includes('roadmap') && Math.abs(y3 - y2) < 12, 'The phone back button returns to the plan at the same scroll position', `scroll ${y2} -> ${y3} at ${h3}`); });

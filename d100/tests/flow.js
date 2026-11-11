@@ -106,6 +106,13 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
   await pg.goBack(); await ww(250); const bk2 = await pg.evaluate(() => location.hash);
   ok('G10', a.role === 'dialog' && a.modal === 'true' && a.named && a.focus && trapped && !a.moved && a.inert, nm + ': role=dialog, labelled, focus inside and trapped, page behind inert and not scrolling');
   ok('G10', !esc.open && esc.h === h0 && !bk.open && bk.h === h0 && bk2 === '#/roadmap', nm + ': Escape closes it (focus back on "' + esc.f + '"); phone back closes it and stays on ' + bk.h + '; one more back leaves to ' + bk2); await pg.context().close(); }
+// G11 live link: the button changes when the judge comes back (visibilitychange), not on a timer, and the visit survives a reload
+{ const pg = await fresh(null, '#/step/s12'); const lbl = () => pg.locator('#confirm .btn').innerText(), ww = ms => pg.waitForTimeout(ms); const l0 = await lbl();
+  await pg.evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, get: () => window.__hid }); document.querySelector('#app a.btn[target=_blank]').addEventListener('click', e => e.preventDefault()); });
+  await pg.click('#app a.btn[target=_blank]'); await pg.evaluate(() => { window.__hid = true; document.dispatchEvent(new Event('visibilitychange')); }); await ww(2200); const lAway = await lbl();
+  await pg.evaluate(() => { window.__hid = false; document.dispatchEvent(new Event('visibilitychange')); }); await ww(120); const lBack = await lbl();
+  await pg.reload(); await pg.waitForSelector('#confirm .btn'); await ww(150); const lReload = await lbl();
+  ok('G11', l0 === 'I have already done this' && lAway === l0 && lBack === 'Done. Stamp it' && lReload === 'Done. Stamp it' && !/setTimeout\(render,\s*400\)/.test(code) && /pageshow/.test(code), 'button stays "' + lAway + '" while away, reads "' + lBack + '" on return and after a reload'); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

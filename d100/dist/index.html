@@ -1036,6 +1036,14 @@ function shots(){const el=$('#shots');el.dir=rtl()?'rtl':'ltr';
 function say(k){toast=t(k);clearTimeout(toastT);toastT=setTimeout(()=>{toast=null;const el=$('#app .toast');if(el)el.remove()},2600)}
 function go(h){if(location.hash===h)render();else location.hash=h}
 
+/* live links: the official site opens in a new tab. The button turns into "Done. Stamp it" when the judge comes back, which the browser reports
+   with visibilitychange (tab switch), pageshow (back from a same-tab visit) or focus. The visit is saved first, so it also survives iOS reloading the tab.
+   The timer only covers a browser that never left the page, e.g. a blocked pop-up. */
+let away=null,awayT=0;
+function returned(){if(!away)return;away=null;clearTimeout(awayT);render()}
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(away)away.hid=true}else returned()});
+addEventListener('pageshow',e=>{if(e.persisted)render();else returned()});
+addEventListener('focus',()=>{if(away&&away.hid&&!document.hidden)returned()});
 /* sheets: opening one adds a history entry, so the phone's back button closes it. Closing by button, backdrop or Escape takes that entry away again. */
 function shut(){if(!S.warn&&!S.sheet)return;S.warn=null;S.sheet=null;render();const o=opener&&$('#app [data-act="'+opener+'"]');if(o)o.focus()}
 function closeSheet(){if(history.state&&history.state.sheet)history.back();else shut()}
@@ -1059,7 +1067,7 @@ document.addEventListener('click',e=>{
     S=fresh({biz,activity:O.activity||'cafe',emirati:O.emirati!==false,capital:O.capital||150000,touched:1});CK={};VIS={};OWN={};go('#/building');return}
   if(a==='cat'){cat=b;render();return}
   if(a==='pick'){S.touched=1;S.picks[b]=c;render();if(c==='own'){const o=$('#own');if(o)o.focus()}return}
-  if(a==='visit'){S.touched=1;VIS[b]=1;save();setTimeout(render,400);return}
+  if(a==='visit'){S.touched=1;VIS[b]=1;save();away={hid:document.hidden};clearTimeout(awayT);awayT=setTimeout(()=>{if(away&&!away.hid&&!document.hidden)returned()},1500);return}
   if(a==='check'){CK[b]=!CK[b];render();return}
   if(a==='bankpick'){S.touched=1;S.bankPick=b;render();return}
   if(a==='sheet'||a==='warn'){if(a==='sheet')S.sheet=b;else S.warn=b;opener=el.dataset.act;try{history.pushState({sheet:1},'')}catch(e){}render();return}
