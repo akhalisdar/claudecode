@@ -62,7 +62,7 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
 // G05 progress and language survive a refresh; the landing button does not wipe them; Reset in More does
 { const pg = await fresh(); const cnt = () => pg.evaluate(() => (document.querySelector('#app .dayhead .m b') || {}).textContent || ''); const ww = ms => pg.waitForTimeout(ms);
   await pg.click('#app [data-act=begin]'); await ww(150); await pg.click('#app .next .btn'); await ww(150); await pg.click('#app button.opt >> nth=0'); await ww(100); await pg.click('#confirm .btn'); await pg.waitForFunction(() => location.hash.includes('stars')); await ww(100);
-  await pg.goto(f + '#/roadmap'); await ww(150); const a = await cnt(); await pg.click('#app .lang'); await ww(150); await pg.reload(); await pg.waitForSelector('#app .dayhead'); await ww(150);
+  await pg.goto(f + '#/roadmap'); await ww(400); const a = await cnt(); await pg.click('#app .lang'); await ww(150); await pg.reload(); await pg.waitForSelector('#app .dayhead'); await ww(150);
   const st = await pg.evaluate(() => ({ dir: document.documentElement.dir, lang: document.documentElement.lang, key: Object.keys(localStorage).join(',') })); const bAr = await cnt(); await pg.click('#app .lang'); await ww(150); const bb = await cnt();
   await pg.goto(f + '#/landing'); await ww(150); await pg.click('#app [data-act=begin]'); await ww(250); const c2 = await cnt();
   await pg.goto(f + '#/more'); await ww(150); await pg.click('#app [data-act=reset]'); await ww(250); const d2 = await cnt(); await pg.reload(); await pg.waitForSelector('#app .dayhead'); await ww(150); const e2 = await cnt();
@@ -79,13 +79,13 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
 // G07 the toast never covers a button, and when it goes it does not take focus or the typed text with it
 { const pg = await fresh(null, '#/step/s8?s=after'); await pg.click('#confirm [data-act^="done:"]'); await pg.waitForSelector('#app .toast', { timeout: 6000 }); await pg.waitForTimeout(100);
   const hit = await pg.evaluate(() => { const t = document.querySelector('#app .toast').getBoundingClientRect(), vb = document.querySelector('#app .view').getBoundingClientRect().bottom; return [...document.querySelectorAll('#app button,#app a')].filter(e => { const r = e.getBoundingClientRect(), bot = e.closest('.view') ? Math.min(r.bottom, vb) : r.bottom; return r.width && r.left < t.right && r.right > t.left && r.top < t.bottom && bot > t.top; }).map(e => e.textContent.trim().slice(0, 20)); });
-  await pg.click('#app button.opt >> nth=3'); await pg.waitForTimeout(100); await pg.type('#own', 'Al Noor'); await pg.waitForFunction(() => !document.querySelector('#app .toast'), null, { timeout: 6000 }); await pg.waitForTimeout(100);
+  await pg.waitForTimeout(450); await pg.click('#app button.opt >> nth=3'); await pg.waitForTimeout(100); await pg.type('#own', 'Al Noor'); await pg.waitForFunction(() => !document.querySelector('#app .toast'), null, { timeout: 6000 }); await pg.waitForTimeout(100);
   const af = await pg.evaluate(() => ({ id: document.activeElement.id, v: (document.querySelector('#own') || {}).value }));
   ok('G07', hit.length === 0 && af.id === 'own' && af.v === 'Al Noor', 'toast covers nothing' + (hit.length ? ' (covers ' + hit.join(', ') + ')' : '') + '; after it goes, focus is still on #' + af.id + ' with "' + af.v + '"'); await pg.context().close(); }
 // G08 after a stamp: next screen opens at the top with focus on its heading; on the star screen the Next button is on the first screen
 { const pg = await fresh({ viewport: { width: 390, height: 664 } }, '#/step/s7'); await pg.click('#app button.opt >> nth=0'); await pg.waitForTimeout(100); await pg.click('#confirm .btn'); await pg.waitForFunction(() => location.hash.includes('stars')); await pg.waitForTimeout(150);
   const a = await pg.evaluate(() => { const b2 = document.querySelector('#app .unlock a.btn'), q = b2 ? b2.getBoundingClientRect() : null; return { f: document.activeElement.className, on: !!q && q.top >= 0 && q.bottom <= innerHeight, top: document.querySelector('#app .view').scrollTop }; });
-  await pg.click('#app .unlock a.btn'); await pg.waitForTimeout(200); const b3 = await pg.evaluate(() => ({ f: document.activeElement.tagName, top: document.querySelector('#app .view').scrollTop, h: location.hash }));
+  await pg.waitForTimeout(300); await pg.click('#app .unlock a.btn'); await pg.waitForTimeout(200); const b3 = await pg.evaluate(() => ({ f: document.activeElement.tagName, top: document.querySelector('#app .view').scrollTop, h: location.hash }));
   ok('G08', a.f === 'unlock' && a.on && a.top === 0 && b3.f === 'H1' && b3.top === 0, 'star screen: focus on .' + a.f + ', Next button on the first screen: ' + a.on + '; next step ' + b3.h + ': focus on ' + b3.f + ', scroll ' + b3.top); await pg.context().close(); }
 // G09 back from a step returns to the plan at the same scroll position, with the in-app Back link and with the phone's back button, and never loops
 { const pg = await fresh({ viewport: { width: 390, height: 664 } }, '#/landing'); const ww = ms => pg.waitForTimeout(ms), y = () => pg.evaluate(() => Math.round(document.querySelector('#app .view').scrollTop)), hh = () => pg.evaluate(() => location.hash);
@@ -133,6 +133,13 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
 // G16 with Reduce Motion on, the three lines on the building screen are visible
 { const pg = await fresh({ reducedMotion: 'reduce' }, '#/building'); const op = await pg.evaluate(() => [...document.querySelectorAll('#app .building p')].map(e => getComputedStyle(e).opacity).join(','));
   ok('G16', op === '1,1,1', 'building screen lines have opacity ' + op + ' with reduced motion'); await pg.context().close(); }
+// G17 a double tap on "Skip anyway" or on the stamp button does not act on the next screen; double-tap zoom is off
+{ const pg = await fresh({ reducedMotion: 'no-preference' }, '#/step/s8'); const ww = ms => pg.waitForTimeout(ms);
+  await pg.click('#app .skip'); await ww(250); const box = await pg.locator('#app .sheet [data-act^="skip:"]').boundingBox(); const x = box.x + box.width / 2, y = box.y + box.height / 2; await pg.mouse.click(x, y); await ww(120); await pg.mouse.click(x, y); await pg.mouse.click(x, y + 20); await ww(500);
+  const a = await pg.evaluate(() => ({ h: location.hash, sheet: !!document.querySelector('#app .sheet') }));
+  await pg.goto(f + '#/step/s12'); await ww(200); const bb = await pg.locator('#confirm .btn').boundingBox(); await pg.mouse.click(bb.x + 40, bb.y + 20); await pg.mouse.click(bb.x + 40, bb.y + 20); await pg.waitForFunction(() => !document.querySelector('#app .slam') && !location.hash.includes('s12'), null, { timeout: 6000 }); await pg.mouse.click(bb.x + 40, bb.y + 20); await ww(300); await pg.goto(f + '#/roadmap'); await ww(200);
+  const cnt = await pg.evaluate(() => document.querySelector('#app .dayhead .m b').textContent), ta = await pg.evaluate(() => getComputedStyle(document.querySelector('#app .btn')).touchAction);
+  ok('G17', a.h === '#/step/s7' && !a.sheet && /^7 /.test(cnt) && ta === 'manipulation', 'double tap on Skip anyway lands on ' + a.h + ' with no new warning; triple tap on the stamp button stamps one step ("' + cnt + '"); touch-action: ' + ta); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

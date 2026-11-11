@@ -259,7 +259,7 @@ async function journey(browser, dev, base, lang, out) {
     await page.click('#app .lang'); await w(200); });
   await run('J05', 'Stamp a step', async () => {
     await page.click('#app button.opt >> nth=0'); await w(200); await page.click('#confirm .btn'); await page.click('#confirm .btn', { timeout: 500, force: true }).catch(() => {});
-    await page.waitForFunction(() => !document.querySelector('#app .slam'), null, { timeout: 5000 }); await w(350);
+    await page.waitForFunction(() => !document.querySelector('#app .slam'), null, { timeout: 5000 }); await w(450);
     const st = await ev(() => { const a = document.activeElement; return { h: location.hash, top: Math.round((document.querySelector('#app .view') || {}).scrollTop || 0), focus: a ? a.tagName + (a.className ? '.' + a.className : '') : '' }; });
     note('J05', /stars|step/.test(st.h) && st.top === 0, 'After a stamp the next screen opens at the top', JSON.stringify(st));
     note('J05f', /^H1|unlock/i.test(st.focus), 'After a stamp, focus moves to the heading of the next screen', 'focus is on ' + st.focus); });

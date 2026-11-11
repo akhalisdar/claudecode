@@ -25,6 +25,8 @@
   --mono:'IBM Plex Mono','IBM Plex Sans Arabic',ui-monospace,monospace;
 }
 *{box-sizing:border-box}
+/* no double-tap zoom and no 300ms wait on iOS */
+html,body,#app,#app *{touch-action:manipulation}
 html,body{margin:0;height:100%}
 body{background:var(--paper);color:var(--ink);font:400 16px/1.5 var(--sans);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
@@ -1055,11 +1057,14 @@ function go(h){if(location.hash===h)render();else location.hash=h}
 /* live links: the official site opens in a new tab. The button turns into "Done. Stamp it" when the judge comes back, which the browser reports
    with visibilitychange (tab switch), pageshow (back from a same-tab visit) or focus. The visit is saved first, so it also survives iOS reloading the tab.
    The timer only covers a browser that never left the page, e.g. a blocked pop-up. */
-let away=null,awayT=0;
+let away=null,awayT=0,hold=0;
 function returned(){if(!away)return;away=null;clearTimeout(awayT);render()}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(away)away.hid=true}else returned()});
 addEventListener('pageshow',e=>{if(e.persisted)render();else returned()});
 addEventListener('focus',()=>{if(away&&away.hid&&!document.hidden)returned()});
+/* double-tap guard: for a third of a second after a stamp or a skip, taps do nothing. The second tap of a double tap would otherwise land on whatever
+   has just appeared under the finger: the next step's Skip, or the tab under the sheet's last button. */
+document.addEventListener('click',e=>{if(Date.now()<hold){e.preventDefault();e.stopPropagation()}},true);
 /* sheets: opening one adds a history entry, so the phone's back button closes it. Closing by button, backdrop or Escape takes that entry away again. */
 function shut(){if(!S.warn&&!S.sheet)return;S.warn=null;S.sheet=null;render();const o=opener&&$('#app [data-act="'+opener+'"]');if(o)o.focus()}
 function closeSheet(){if(history.state&&history.state.sheet)history.back();else shut()}
@@ -1088,14 +1093,14 @@ document.addEventListener('click',e=>{
   if(a==='bankpick'){S.touched=1;S.bankPick=b;render();return}
   if(a==='sheet'||a==='warn'){if(a==='sheet')S.sheet=b;else S.warn=b;opener=el.dataset.act;try{history.pushState({sheet:1},'')}catch(e){}render();return}
   if(a==='closesheet'){closeSheet();return}
-  if(a==='skip'){S.touched=1;SK()[b]=S.day;S.warn=null;const nx=nextOpen(),dest=nx?hrefOf(nx):'#/roadmap';say('toastSkip');
+  if(a==='skip'){S.touched=1;SK()[b]=S.day;S.warn=null;const nx=nextOpen(),dest=nx?hrefOf(nx):'#/roadmap';say('toastSkip');hold=Date.now()+350;
     if(history.state&&history.state.sheet&&location.hash!==dest)location.replace(dest);else go(dest);return}
   if(a==='toast'){say(b);render();return}
   if(a==='done'){if(S.slam)return;const s=stepById(b);if(blockers(s).length)return;const before=starsOf(score());S.touched=1;S.done[b]=S.day;delete SK()[b];
     if(s.cat&&S.picks[b]){const p=P[s.cat].find(x=>x.id===S.picks[b]);if(p&&p.mo)S.extra.push({n:p.n,mo:p.mo})}
     const after=starsOf(score()),calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
     S.slam={day:S.day};render();
-    setTimeout(()=>{S.slam=null;if(after>before){S.unlock=after;go('#/stars')}else{const nx=nextOpen();say('toastDone');go(nx?hrefOf(nx):'#/roadmap')}},calm?600:1250);
+    setTimeout(()=>{S.slam=null;hold=Date.now()+350;if(after>before){S.unlock=after;go('#/stars')}else{const nx=nextOpen();say('toastDone');go(nx?hrefOf(nx):'#/roadmap')}},calm?600:1250);
     return}
 });
 document.addEventListener('input',e=>{const el=e.target;
