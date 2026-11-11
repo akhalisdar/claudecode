@@ -57,6 +57,7 @@ const sents=s=>{const o=[];let a=0;for(let i=0;i<s.length-1;i++)if('.!؟'.indexO
 const plus=n=>'<bdi dir="ltr">+'+n+'</bdi>';
 const DEF_BIZ='Sidr Specialty Coffee', DEF_BIZ_AR='سدر للقهوة المختصة';
 let CK={},VIS={},OWN={};
+const TRAIL=[],SCR={};let goingBack=false;
 /* ---------- saved state: survives a refresh and iOS reloading the tab. Versioned key; "Reset" in More wipes it. ---------- */
 const KEY='d100:v1';
 function save(){try{const c=Object.assign({},S);delete c.slam;delete c.warn;delete c.sheet;localStorage.setItem(KEY,JSON.stringify({S:c,lang,VIS,OWN,cat}))}catch(e){}}
@@ -327,7 +328,7 @@ function pitch(){$('#pitch').innerHTML=`<div class="ptop"><span class="wm">D100<
 
 /* ---------- router ---------- */
 const ORDER=['landing','start','roadmap','step','bank','cash','stars','market','programmes','nudges','tiers','day100'];
-function parse(){const raw=location.hash.replace(/^#\/?/,''),[path,qs]=raw.split('?'),seg=path.split('/').filter(Boolean),q=new URLSearchParams(qs||'');return{name:seg[0]||'',arg:seg[1],q}}
+function parse(h){const raw=(h==null?location.hash:h).replace(/^#\/?/,''),[path,qs]=raw.split('?'),seg=path.split('/').filter(Boolean),q=new URLSearchParams(qs||'');return{name:seg[0]||'',arg:seg[1],q}}
 function html(name,arg){if(name==='step')return SC.step(arg||'s7');return (SC[name]||SC.roadmap)()}
 function render(){
   const r=parse();
@@ -347,12 +348,14 @@ function render(){
   if(name!=='programmes')S.sheet=null;
   if(name!=='step'&&name!=='bank')S.warn=null;
   if(name!=='stars'&&name!=='cash')S.unlock=0;
-  const key=name+(r.arg||''),old=$('.view',app)||$('.land',app),keep=app.dataset.route===key&&old?old.scrollTop:0;
-  const open=app.dataset.route===key&&$('details.donelist',app)&&$('details.donelist',app).open;
+  /* remember where each screen was scrolled to; give it back on a re-render of the same screen and on the way back to it */
+  const key=name+(r.arg||''),old=$('.view',app)||$('.land',app);
+  if(old&&app.dataset.route){const d=$('details.donelist',app);SCR[app.dataset.route]={y:old.scrollTop,open:!!(d&&d.open)}}
+  const mem=(app.dataset.route===key||goingBack)?SCR[key]:null;goingBack=false;
   app.innerHTML=html(name,r.arg)+(S.slam?`<div class="slam">${doneStamp(S.slam.day)}</div>`:'');
   app.dataset.route=key;
-  const v=$('.view',app)||$('.land',app);if(v&&keep)v.scrollTop=keep;
-  if(open){const d=$('details.donelist',app);if(d)d.open=true}
+  if(mem&&mem.open){const d=$('details.donelist',app);if(d)d.open=true}
+  const v=$('.view',app)||$('.land',app);if(v&&mem)v.scrollTop=mem.y;
   pitch();save();
 }
 function shots(){const el=$('#shots');el.dir=rtl()?'rtl':'ltr';
@@ -363,6 +366,9 @@ function say(k){toast=t(k);clearTimeout(toastT);toastT=setTimeout(()=>{toast=nul
 function go(h){if(location.hash===h)render();else location.hash=h}
 
 document.addEventListener('click',e=>{
+  /* in-app Back: go back in history when the plan is the previous entry, otherwise replace this entry. Either way no new entry, so the phone's back button never bounces to the step again. */
+  const bk=e.target.closest('a.back');if(bk&&!e.metaKey&&!e.ctrlKey){e.preventDefault();const h=bk.getAttribute('href'),n=TRAIL.length;
+    if(n>1&&TRAIL[n-2]===keyOf(h))history.back();else{TRAIL.pop();goingBack=true;location.replace(h)}return}
   const el=e.target.closest('[data-act]');if(!el)return;
   if(e.target.closest('[data-stop]')&&el.classList.contains('sheet-bg'))return;
   const [a,b,c]=el.dataset.act.split(':');
@@ -396,10 +402,15 @@ document.addEventListener('input',e=>{const el=e.target;
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.target.matches('[role=link]'))e.target.click()});
 /* after a move to another screen: start at the top and put focus on its heading, so a screen reader announces where the judge landed */
 function focusHead(){const el=$('#app .unlock')||$('#app h1')||$('#app .dayhead');if(!el)return;el.setAttribute('tabindex','-1');try{el.focus({preventScroll:true})}catch(e){el.focus()}}
-addEventListener('hashchange',()=>{render();const v=$('#app .view')||$('#app .land');if(v)v.scrollTop=0;focusHead()});
+/* TRAIL mirrors the tab's history so "back" can be told from "forward": back restores the scroll position, forward starts at the top */
+const keyOf=h=>{const r=parse(h);return r.name+(r.arg||'')};
+addEventListener('hashchange',()=>{const k=keyOf(),n=TRAIL.length;let back=goingBack;
+  if(n>1&&TRAIL[n-2]===k){TRAIL.pop();back=true}else if(TRAIL[n-1]!==k)TRAIL.push(k);
+  goingBack=back;render();if(!back){const v=$('#app .view')||$('#app .land');if(v)v.scrollTop=0}focusHead()});
 addEventListener('resize',()=>{const w=matchMedia('(min-width:900px)').matches;if(w!==wide)render()});
 /* first visit: a phone set to Arabic opens in Arabic. A saved choice or ?lang= in the link wins. */
 if(!load()&&/^ar\b/i.test(navigator.language||''))lang='ar';
+TRAIL.push(keyOf());
 render();
 })();
 </script>

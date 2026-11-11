@@ -87,6 +87,15 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
   const a = await pg.evaluate(() => { const b2 = document.querySelector('#app .unlock a.btn'), q = b2 ? b2.getBoundingClientRect() : null; return { f: document.activeElement.className, on: !!q && q.top >= 0 && q.bottom <= innerHeight, top: document.querySelector('#app .view').scrollTop }; });
   await pg.click('#app .unlock a.btn'); await pg.waitForTimeout(200); const b3 = await pg.evaluate(() => ({ f: document.activeElement.tagName, top: document.querySelector('#app .view').scrollTop, h: location.hash }));
   ok('G08', a.f === 'unlock' && a.on && a.top === 0 && b3.f === 'H1' && b3.top === 0, 'star screen: focus on .' + a.f + ', Next button on the first screen: ' + a.on + '; next step ' + b3.h + ': focus on ' + b3.f + ', scroll ' + b3.top); await pg.context().close(); }
+// G09 back from a step returns to the plan at the same scroll position, with the in-app Back link and with the phone's back button, and never loops
+{ const pg = await fresh({ viewport: { width: 390, height: 664 } }, '#/landing'); const ww = ms => pg.waitForTimeout(ms), y = () => pg.evaluate(() => Math.round(document.querySelector('#app .view').scrollTop)), hh = () => pg.evaluate(() => location.hash);
+  await pg.click('#app [data-act=begin]'); await ww(200); await pg.evaluate(() => { document.querySelector('#app .view').scrollTop = 240; }); const y0 = await y();
+  await pg.click('#app a.step >> nth=3'); await ww(200); const hs = await hh(), ys = await y(); await pg.click('#app .bar .back'); await ww(250); const y1 = await y(), h1 = await hh();
+  await pg.goBack(); await ww(250); const h2 = await hh(); await pg.goForward(); await ww(250);
+  await pg.evaluate(() => { document.querySelector('#app .view').scrollTop = 240; }); await pg.click('#app a.step >> nth=3'); await ww(200); await pg.goBack(); await ww(250); const y3 = await y(), h3 = await hh();
+  await pg.goto(f + '#/step/s9'); await pg.reload(); await pg.waitForSelector('#app .bar .back'); await ww(150); await pg.click('#app .bar .back'); await ww(250); const h4 = await hh(); await pg.goBack(); await ww(250); const h5 = await hh();
+  ok('G09', ys === 0 && h1 === '#/roadmap' && Math.abs(y1 - y0) < 3 && h2 !== hs, 'in-app Back: plan reopens at ' + y1 + ' (was ' + y0 + '); phone back then goes to ' + h2 + ', not ' + hs);
+  ok('G09', h3 === '#/roadmap' && Math.abs(y3 - y0) < 3, 'phone back: plan reopens at ' + y3 + ' (was ' + y0 + ')'); ok('G09', h4 === '#/roadmap' && !h5.includes('step/s9'), 'Back after a refresh on a step goes to the plan and does not leave the step behind it in history (' + h5 + ')'); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
