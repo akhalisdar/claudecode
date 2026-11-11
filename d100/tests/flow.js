@@ -52,6 +52,9 @@ await p.goto(f + '#/roadmap?s=new&lang=en'); await w(150);
 // G02 screen height has a fallback for browsers without dvh, and the shell fills the screen exactly
 { const h = await p.evaluate(() => { const d = document.querySelector('#device').getBoundingClientRect(), t = document.querySelector('#app .tabs').getBoundingClientRect(); return { d: d.height, tb: t.bottom, vh: innerHeight }; });
   const css = code.match(/#device\{[^}]*height:100%;height:100dvh[^}]*\}/); ok('G02', !!css && !/height:100dvh/.test(code.replace(/height:100%;height:100dvh/g, '')) && Math.abs(h.d - h.vh) < 1 && h.tb <= h.vh + .5, 'every 100dvh has a 100% fallback; shell is ' + h.d + ' of ' + h.vh + 'px, tab bar ends at ' + h.tb); }
+// G03 no alef followed by fathatan anywhere in the Arabic screens (WebKit lifts the word off the baseline)
+{ const hit = arText.join(' ').match(/\S*\u0627\u064B\S*/g) || []; await p.goto(f + '#/landing?lang=en'); await w(80); const lic = (await p.locator('#app .lic').innerText()).match(/\S*\u0627\u064B\S*/g) || [];
+  ok('G03', hit.length + lic.length === 0 && /\u064B\u0627/.test(arText.join(' ')), 'tanween sits before the alef in all ' + arText.length + ' Arabic screens and on the licence card' + (hit.length ? ': ' + hit.slice(0, 3).join(' ') : '')); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
