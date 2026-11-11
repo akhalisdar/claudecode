@@ -148,6 +148,9 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
     for (const r of ['landing', 'start', 'roadmap', 'step/s7', 'step/s11', 'step/s12', 'step/s7?s=warn', 'bank?s=new', 'cash', 'stars', 'market', 'programmes', 'nudges', 'tiers', 'day100', 'more']) { await pg.goto(`${f}#/${r}${r.includes('?') ? '&' : '?'}lang=${l}`); await pg.waitForTimeout(60);
       small.push(...await pg.evaluate(k => [...document.querySelectorAll('#app a[href],#app button,#app input,#app summary')].filter(e => !e.closest('details:not([open])') || e.tagName === 'SUMMARY').map(e => [e, e.getBoundingClientRect()]).filter(x => x[1].width > 0 && (x[1].width < 43.5 || x[1].height < 43.5)).map(x => k + ' ' + (x[0].className || x[0].tagName) + ' ' + Math.round(x[1].width) + 'x' + Math.round(x[1].height)), vw + ' ' + l + ' ' + r)); } await pg.context().close(); }
   ok('G19', small.length === 0, 'tap targets under 44px: ' + (small.length ? small.length + ', e.g. ' + [...new Set(small)].slice(0, 4).join('; ') : 'none, across 16 screens at 320 and 390px in both languages')); }
+// G20 plaque captions are full-strength ink on brass (was 80%, 4.36:1)
+{ await p.goto(f + '#/stars?lang=en'); await w(100); const a = await p.evaluate(() => [...document.querySelectorAll('#app .plaque text')].map(t2 => getComputedStyle(t2).opacity + ' ' + getComputedStyle(t2).fill).join(' | '));
+  ok('G20', a.split(' | ').length === 3 && a.split(' | ').every(x => x.startsWith('1 ')), 'plaque text: ' + a); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));
