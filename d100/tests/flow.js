@@ -174,6 +174,10 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
   const txt = arText.join(' '), mirrored = v => /^matrix\(-1,/.test(v), curve = /<textPath[^>]*>[^<]*[\u0600-\u06FF]/.test(code);
   ok('G23', mirrored(a.ext) && mirrored(a.back) && mirrored(b3.chev) && a.bdiName && a.host === 'ltr' && b3.who && c3 && d3.dir === 'rtl' && d3.first === '10,000' && d3.firstX && !/[\u0660-\u0669\u06F0-\u06F9]/.test(txt) && !curve,
     'Arabic: external-link arrow, back arrow and chevrons mirrored; slider runs right to left with 10,000 on the right; names and web addresses isolated; Western numerals only; no Arabic on a curve'); await pg.context().close(); }
+// G24 the star screen names the step that earned the star, whichever step it was
+{ const pg = await fresh(null, '#/step/s8'); await pg.click('#confirm .btn'); await pg.waitForFunction(() => location.hash.includes('stars')); await pg.waitForTimeout(150); const a = one(await pg.locator('#app .unlock span').innerText());
+  await pg.goto(f + '#/stars?lang=ar'); await pg.waitForTimeout(100); await pg.context().close();
+  ok('G24', a === 'Done on time: Pass the food permit inspection. Your record is now 54.', 'star screen says: "' + a + '"'); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

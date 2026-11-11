@@ -20,3 +20,14 @@ Every `اً` (alef, then fathatan) is now `ًا` (fathatan on the letter before,
 The same change applies to: اسمًا، افتراضيًا، غدًا، واحدًا، انطلاقًا، بنكًا، اعتبارًا، إلزاميًا، شهرًا، أيامًا، مبكرًا، طلبًا، موظفًا، درهمًا، مشروعًا، بريدًا، إلكترونيًا، مرشدًا، منتجًا، مستندًا.
 
 One word is different: `أولاً` is now `أولا`, with no mark (in "اختر مزوّدًا أولا" on a provider step and "أنجز هذه أولا" on a locked step). With the mark between the lam and the alef (`أولًا`), WebKit lifted the word off the baseline again, and that string is the main button on every provider step. If you would rather keep the mark, check `أولًا` on a real iPhone first: I could only test on the Linux build of WebKit.
+
+## 2. Star screen sentence (G24): new wording
+
+The old sentence named payroll whichever step earned the star. `{t}` is the title of the step, `{s}` the record score.
+
+| | English | Arabic |
+|---|---|---|
+| was | Setting up payroll on time moved your record to {s}. | إعداد الرواتب في موعده رفع درجة سجلّك إلى {s}. |
+| now | Done on time: {t}. Your record is now {s}. | أُنجزت في موعدها: {t}. درجة سجلّك الآن {s}. |
+
+Example: أُنجزت في موعدها: إعداد الرواتب قبل أول تعيين. درجة سجلّك الآن 54.

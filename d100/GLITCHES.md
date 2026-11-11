@@ -48,6 +48,12 @@ Before screenshots are in `glitches/before/`, after screenshots in `glitches/aft
 | G22 | all | both | steps s3, s12, s13, `#/bank` | Links go to home pages where a confirmed official service page exists (corporate tax registration, Ejari, e-invoicing). The Mashreq link redirects to a personal-banking page over plain http. See "Links" below. | none |
 | G23 | all | ar | steps with a live link, plan header, provider lists | Arabic polish: the external-link arrow is not mirrored; Latin names inside Arabic sentences (bank names, provider names, a typed business name, the domain in "يفتح tax.gov.ae") are not isolated with `<bdi>`. Chevrons, back arrows, the ruler, the chart and the slider are already mirrored correctly; numerals are Western throughout. | `G23-arabic-link-step.png` |
 
+Found while fixing:
+
+| id | device | lang | route | what happens | before |
+|---|---|---|---|---|---|
+| G24 | all | both | `#/stars` after a stamp earns a star | The star screen always says "Setting up payroll on time moved your record to 54", whichever step earned the star. A judge who stamps the food inspection first is told about payroll. | `G08-star-earned-next-button.png` (same box) |
+
 ## Not a glitch
 
 - Suspect 5, inputs under 16px: `#own` and `#biz` compute to 16px, `#capn` to 26px.

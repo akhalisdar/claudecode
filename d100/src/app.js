@@ -278,7 +278,7 @@ cash(){const b=bal(S.day),m=monthly(),z=zeroDay(),up=ONEOFF.filter(o=>o.d>S.day)
   return shell(bar(),h,'cash')},
 
 stars(){const sc=score(),n=starsOf(sc),nxt=THR[n],cr=CREDIT[n],nx=nextOpen(),un=['u1','u2','u3','u4','u5'];
-  const h=`${S.unlock?`<div class="unlock"><b>${t('earned',{n})}</b><span>${t('earnedP',{s:sc})}</span>${nx?`<a class="btn" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}</div>`:''}
+  const h=`${S.unlock?`<div class="unlock"><b>${t('earned',{n})}</b><span>${t('earnedP',{s:sc,t:L((stepById(S.unlockStep)||stepById('s7')).t)})}</span>${nx?`<a class="btn" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}</div>`:''}
   <h1>${t('recT')}</h1><p class="lede">${t('plaqueSo')}</p>${plaque(n,'D100',t('day')+' '+S.day+' '+t('of100'),S.unlock)}
   <div class="scoreline"><b class="num">${sc}<small> ${t('of100')}</small></b><span>${nxt?t('nextStar',{p:nxt-sc,n:n+1}):t('top')}</span></div>
   <div class="meter"><span style="width:${sc}%"></span>${THR.map((x,i)=>`<i style="inset-inline-start:${x}%"></i><em class="${sc>=x?'hit':''}" style="inset-inline-start:${x}%">${i+1}★</em>`).join('')}</div>
@@ -349,7 +349,7 @@ function render(){
   /* ?lang= and the ?s= demo states apply once per link, not on every re-render, so a sheet opened by ?s=warn can be closed */
   if(location.hash!==applied){applied=location.hash;
   if(r.q.get('lang'))lang=r.q.get('lang')==='ar'?'ar':'en';
-  if(r.q.get('s')==='after'&&!S.done.s7){S.picks.s7='rateb';S.extra=[{n:'Rateb Payroll',mo:150}];S.done.s7=S.day;S.unlock=3}
+  if(r.q.get('s')==='after'&&!S.done.s7){S.picks.s7='rateb';S.extra=[{n:'Rateb Payroll',mo:150}];S.done.s7=S.day;S.unlock=3;S.unlockStep='s7'}
   if(r.q.get('s')==='slam')S.slam={day:S.day};
   if(r.q.get('s')==='new'&&S.day!==1)S=fresh({biz:DEF_BIZ,activity:'cafe',emirati:true,capital:150000});
   if(r.q.get('s')==='skip'&&!S.done.s7)SK().s7=S.day;
@@ -430,7 +430,7 @@ document.addEventListener('click',e=>{
     if(s.cat&&S.picks[b]){const p=P[s.cat].find(x=>x.id===S.picks[b]);if(p&&p.mo)S.extra.push({n:p.n,mo:p.mo})}
     const after=starsOf(score()),calm=matchMedia('(prefers-reduced-motion:reduce)').matches;
     S.slam={day:S.day};render();
-    setTimeout(()=>{S.slam=null;hold=Date.now()+350;if(after>before){S.unlock=after;go('#/stars')}else{const nx=nextOpen();say('toastDone');go(nx?hrefOf(nx):'#/roadmap')}},calm?600:1250);
+    setTimeout(()=>{S.slam=null;hold=Date.now()+350;if(after>before){S.unlock=after;S.unlockStep=b;go('#/stars')}else{const nx=nextOpen();say('toastDone');go(nx?hrefOf(nx):'#/roadmap')}},calm?600:1250);
     return}
 });
 document.addEventListener('input',e=>{const el=e.target;
