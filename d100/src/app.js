@@ -57,6 +57,8 @@ const sents=s=>{const o=[];let a=0;for(let i=0;i<s.length-1;i++)if('.!؟'.indexO
 const plus=n=>'<bdi dir="ltr">+'+n+'</bdi>';
 const DEF_BIZ='Sidr Specialty Coffee', DEF_BIZ_AR='سدر للقهوة المختصة';
 let CK={},VIS={},OWN={};
+const CAP=[10000,1000000];
+const digits=v=>String(v).replace(/[\u0660-\u0669]/g,c=>c.charCodeAt(0)-0x660).replace(/[\u06F0-\u06F9]/g,c=>c.charCodeAt(0)-0x6F0).replace(/\D/g,'');
 const TRAIL=[],SCR={};let goingBack=false,applied=null,opener='';
 /* ---------- saved state: survives a refresh and iOS reloading the tab. Versioned key; "Reset" in More wipes it. ---------- */
 const KEY='d100:v1';
@@ -185,7 +187,7 @@ const SC={
 landing(){return `<div class="proto">${t('proto')}</div><main class="land"><div class="top"><span class="wm">D100</span>${langBtn()}</div>${landBody(1)}</main>
   <div class="actions end"><a class="btn" href="#/roadmap" data-act="begin">${t('start')}</a></div>`},
 
-start(){const O=S._ob||(S._ob={licence:'mainland',activity:'cafe',emirati:true,capital:150000,biz:''});
+start(){const O=S._ob||(S._ob={licence:'mainland',activity:'cafe',emirati:true,capital:150000,biz:''});O.capital=Math.max(CAP[0],Math.min(CAP[1],+O.capital||150000));
   const r=(k,v,l,s,dis)=>dis?`<div class="opt" style="color:var(--ink2)"><span class="rd" style="border-color:var(--ink2)"></span><b style="font-weight:500">${l}</b><span class="ds" style="color:var(--ink2)">${s}</span></div>`
     :`<button class="opt" role="radio" aria-checked="${O[k]===v}" data-act="ob:${k}:${v}"><span class="rd"></span><b>${l}</b>${s?`<span class="ds">${s}</span>`:''}</button>`;
   return `<div class="proto">${t('proto')}</div>${sub(wide?t('tRoad'):'D100',wide?'roadmap':'')}<main class="view">
@@ -193,8 +195,8 @@ start(){const O=S._ob||(S._ob={licence:'mainland',activity:'cafe',emirati:true,c
   <fieldset><legend>${t('q1')}</legend><div class="opts" role="radiogroup">${r('licence','mainland',t('q1a'),t('q1as'))}${r('licence','fz',t('q1b'),t('q1bs'),1)}</div></fieldset>
   <fieldset><legend>${t('q2')}</legend><div class="opts" role="radiogroup">${r('activity','cafe',t('q2a'))}${r('activity','shop',t('q2b'))}${r('activity','tours',t('q2c'),t('q2cs'),1)}</div></fieldset>
   <fieldset><legend>${t('q3')}</legend><div class="opts" role="radiogroup">${r('emirati',true,t('q3a'))}${r('emirati',false,t('q3b'))}</div></fieldset>
-  <fieldset><legend>${t('q4')}</legend><input id="capn" type="number" inputmode="numeric" min="10000" max="5000000" step="1000" value="${O.capital}" aria-label="${t('q4')}">
-   <input id="cap" type="range" min="10000" max="1000000" step="5000" value="${Math.min(1000000,O.capital)}" aria-label="${t('q4')}"><div class="caprow num"><span>10,000</span><span>1,000,000</span></div></fieldset>
+  <fieldset><legend>${t('q4')}</legend><input id="capn" type="text" inputmode="numeric" autocomplete="off" dir="ltr" data-min="${CAP[0]}" data-max="${CAP[1]}" value="${fmt(O.capital)}" aria-label="${t('q4')}">
+   <input id="cap" type="range" min="${CAP[0]}" max="${CAP[1]}" step="5000" value="${O.capital}" aria-label="${t('q4')}"><div class="caprow num"><span>${fmt(CAP[0])}</span><span>${fmt(CAP[1])}</span></div></fieldset>
   <fieldset><label class="lbl" for="biz">${t('q5')}</label><input id="biz" type="text" maxlength="40" autocomplete="off" placeholder="${DEF_BIZ}" value="${esc(O.biz)}"><p class="note">${t('obNote')}</p></fieldset></main>
   <div class="actions end"><button class="btn" data-act="build">${t('build')}</button></div>`},
 
@@ -418,7 +420,10 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{const el=e.target;
   if(el.id==='own'){OWN[el.dataset.step]=el.value;save();const k=$('#confirm .btn');if(k){const ok=!!el.value.trim();k.disabled=!ok;k.textContent=ok?t('confirmPick'):t('pickFirst')}}
-  if(el.id==='cap'||el.id==='capn'){const O=S._ob;O.capital=Math.max(10000,Math.min(5000000,+el.value||0));if(el.id==='cap')$('#capn').value=O.capital;else $('#cap').value=Math.min(1000000,O.capital);save()}});
+  /* capital: field and slider share one range. The field is text with thousands separators; Arabic-Indic digits from an Arabic keyboard are read as numbers. */
+  if(el.id==='cap'){const O=S._ob;O.capital=+el.value;$('#capn').value=fmt(O.capital);save()}
+  if(el.id==='capn'){const O=S._ob,d=digits(el.value).slice(0,8),n=Math.min(CAP[1],+d||0);el.value=d?fmt(n):'';O.capital=Math.max(CAP[0],n);$('#cap').value=O.capital;save()}});
+document.addEventListener('change',e=>{if(e.target.id==='capn'&&S._ob)e.target.value=fmt(S._ob.capital)});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches&&e.target.matches('[role=link]'))e.target.click();
   const sh=$('#app .sheet');if(!sh)return;
   if(e.key==='Escape'){e.preventDefault();closeSheet();return}
