@@ -165,6 +165,15 @@ for (const [nm, route, openSel] of [['skip warning', '#/step/s8', '#app .skip'],
   const all = [...new Set((fs.readFileSync('src/app.js', 'utf8').match(/https?:\/\/[^'"`\s)<]+/g) || []))], stray = all.filter(u => !u.startsWith('https://') || !OFFICIAL.some(d => new URL(u).hostname === d || new URL(u).hostname === 'www.' + d));
   ok('G22', got.fta === 'https://tax.gov.ae/en/services/corporate.tax.registration.aspx' && got.ftaAr === 'https://tax.gov.ae/ar/services/corporate.tax.registration.aspx' && /eservices\/register-renew-ejari-contract$/.test(got.dld) && got.mashreq === 'https://www.mashreq.com/en/uae/business/' && /Opens dubailand\.gov\.ae in a new tab/.test(note) && stray.length === 0,
     'corporate tax, Ejari and e-invoicing open the service page in the page language; Mashreq opens its business page; all ' + all.length + ' links are https on official domains' + (stray.length ? ' EXCEPT ' + stray.join(' ') : '')); }
+// G23 Arabic: arrows mirrored, slider right-to-left, Latin names isolated, Western numerals, nothing Arabic on a curve
+{ const pg = await fresh(null, '#/bank?s=new&lang=ar'); const ww = ms => pg.waitForTimeout(ms);
+  const a = await pg.evaluate(() => { const m = s2 => { const e = document.querySelector(s2); return e ? getComputedStyle(e).transform : 'none'; }; return { ext: m('#app a.btn .ext'), back: m('#app .bar .back svg'), bdiName: !!document.querySelector('#app a.btn[target=_blank] bdi'), host: (document.querySelector('#app a.btn[target=_blank] + p.note bdi') || {}).dir }; });
+  await pg.goto(f + '#/roadmap?lang=ar'); await ww(80); const b3 = await pg.evaluate(() => ({ chev: getComputedStyle(document.querySelector('#app a.step svg')).transform, who: !!document.querySelector('#app .who bdi') }));
+  await pg.goto(f + '#/step/s7?lang=ar'); await ww(80); const c3 = await pg.evaluate(() => !!document.querySelector('#app .opt b bdi'));
+  await pg.goto(f + '#/start?lang=ar'); await ww(80); const d3 = await pg.evaluate(() => ({ dir: getComputedStyle(document.querySelector('#cap')).direction, first: document.querySelector('#app .caprow span').textContent, firstX: document.querySelector('#app .caprow span').getBoundingClientRect().left > 195 }));
+  const txt = arText.join(' '), mirrored = v => /^matrix\(-1,/.test(v), curve = /<textPath[^>]*>[^<]*[\u0600-\u06FF]/.test(code);
+  ok('G23', mirrored(a.ext) && mirrored(a.back) && mirrored(b3.chev) && a.bdiName && a.host === 'ltr' && b3.who && c3 && d3.dir === 'rtl' && d3.first === '10,000' && d3.firstX && !/[\u0660-\u0669\u06F0-\u06F9]/.test(txt) && !curve,
+    'Arabic: external-link arrow, back arrow and chevrons mirrored; slider runs right to left with 10,000 on the right; names and web addresses isolated; Western numerals only; no Arabic on a curve'); await pg.context().close(); }
 /*CHECKS*/
 
 console.log(o.join('\n')); console.log(G.join('\n'));

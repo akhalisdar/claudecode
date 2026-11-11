@@ -736,6 +736,8 @@ const rtl=()=>lang==='ar';
 /* first sentence splitter. No regex lookbehind: Safari before iOS 16.4 cannot parse one. */
 const sents=s=>{const o=[];let a=0;for(let i=0;i<s.length-1;i++)if('.!؟'.indexOf(s[i])>-1&&/\s/.test(s[i+1])){o.push(s.slice(a,i+1));a=i+2}o.push(s.slice(a));return o};
 const plus=n=>'<bdi dir="ltr">+'+n+'</bdi>';
+/* names that may be Latin inside an Arabic sentence (banks, sample providers, a typed business name, a web address) are isolated so they cannot reorder the text around them */
+const bd=x=>'<bdi>'+x+'</bdi>',bdl=x=>'<bdi dir="ltr">'+x+'</bdi>';
 const DEF_BIZ='Sidr Specialty Coffee', DEF_BIZ_AR='سدر للقهوة المختصة';
 let CK={},VIS={},OWN={};
 const CAP=[10000,1000000];
@@ -788,7 +790,7 @@ const I={
   tick:ic('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
   chev:ic('<path d="M9 6l6 6-6 6"/>','flip'),
   back:ic('<path d="M15 6l-6 6 6 6"/>','flip'),
-  ext:ic('<path d="M14 5h5v5M19 5l-8 8M11 6H6v12h12v-5"/>','ext')
+  ext:ic('<path d="M14 5h5v5M19 5l-8 8M11 6H6v12h12v-5"/>','ext flip')
 };
 const STAR='M12 2.6l2.9 6.2 6.8.8-5 4.7 1.3 6.7-6-3.4-6 3.4 1.3-6.7-5-4.7 6.8-.8z';
 
@@ -843,7 +845,7 @@ function licence(){const custom=S.biz!==DEF_BIZ,act=S.activity==='shop'?['Online
 
 /* ---------- pieces ---------- */
 const langBtn=()=>`<button class="lang" data-act="lang" lang="${rtl()?'en':'ar'}">${t('other')}</button>`;
-const bar=()=>`<header class="bar"><a class="wm" href="#/">D100</a><span class="who">${esc(bizName())}</span>${langBtn()}</header>`;
+const bar=()=>`<header class="bar"><a class="wm" href="#/">D100</a><span class="who">${bd(esc(bizName()))}</span>${langBtn()}</header>`;
 const sub=(label,back)=>`<header class="bar"><a class="back" href="#/${back||'more'}">${I.back}<span>${label}</span></a>${langBtn()}</header>`;
 function tabs(on){const T=[['roadmap','tRoad',I.plan],['cash','tCash',I.cash],['stars','tStars',I.rec],['market','tMarket',I.prov],['more','tMore',I.more]];
   return `<nav class="tabs">${T.map(x=>`<a href="#/${x[0]}" class="${on===x[0]?'on':''}" ${on===x[0]?'aria-current="page"':''}>${x[2]}<span>${t(x[1])}</span></a>`).join('')}</nav>`}
@@ -862,7 +864,7 @@ function stText(s){
   return ''}
 const stepRow=s=>`<a class="step${S.done[s.id]?' done':''}" href="#/${s.bank?'bank':'step/'+s.id}"><span class="dn num">${S.done[s.id]||s.due}</span><span><span class="tt">${L(s.t)}</span><span class="au">${L(A[s.a])}</span></span>${stText(s)||'<span></span>'}${I.chev}</a>`;
 function opt(p,stepId){const on=stepId&&S.picks[stepId]===p.id,lock=!stepId||S.done[stepId],price=p.mo?t('mo',fmt(p.mo)):L(p.pt);
-  const inner=`<span class="rd"></span><b>${p.n}</b><span class="pr">${price}</span><span class="ds">${L(p.b)}</span><span class="mt"><span>${t('rating',{r:p.r.toFixed(1),n:p.j})}</span>${p.g?`<span class="g">${t('grad')} ${'★'.repeat(p.g)}</span>`:''}<span class="mr">${t('proRate')}</span></span>`;
+  const inner=`<span class="rd"></span><b>${bd(p.n)}</b><span class="pr">${price}</span><span class="ds">${L(p.b)}</span><span class="mt"><span>${t('rating',{r:p.r.toFixed(1),n:p.j})}</span>${p.g?`<span class="g">${t('grad')} ${'★'.repeat(p.g)}</span>`:''}<span class="mr">${t('proRate')}</span></span>`;
   return lock?`<div class="opt${on?' on':''}${stepId?'':' flat'}">${inner}</div>`:`<button class="opt" role="radio" aria-checked="${!!on}" data-act="pick:${stepId}:${p.id}">${inner}</button>`}
 const whyText=s=>L(s.w).replace('{ct}',dateAt(1,3));
 /* pinned: the phone landing page pins the main button in the action bar, so only the second link stays in the flow */
@@ -909,13 +911,13 @@ step(id){const st=steps(),s=stepById(id)||nextOpen()||st[0],dn=S.done[s.id],pv=s
   const learn=`<details class="learn"><summary>${t('learn')}</summary>${w.length>1?`<p>${w.slice(1).join(' ')}</p>`:''}<b>${t('need')}</b><ul>${s.d.map(x=>`<li>${L(x)}</li>`).join('')}</ul>${pv?`<p class="note">${t('rank')}</p><p class="note">${t('sample')}</p>`:''}${s.soft?`<p class="note">${t('sampleStep')}</p>`:''}<p class="note">${t('pilotNote')}</p></details>`;
   let foot='',h=`${dn?`<div class="stampbox">${doneStamp(dn)}</div>`:''}<p class="meta"><b>${t('stepOf',{i:st.indexOf(s)+1,m:st.length})}</b>${t('sep')}${t('dueDay',{d:s.due}).toLowerCase()}${dn||s.auto?'':t('sep')+when(n).toLowerCase()}</p><h1>${L(s.t)}</h1>
    <p class="body">${w[0]}</p>${fine?`<p class="risk">${t('missed')}: ${fine}</p>`:''}${!dn&&SK()[s.id]?`<p class="note">${t('skOn',{d:SK()[s.id]})}</p>`:''}`;
-  if(dn){const nx=nextOpen();h+=`<p class="note">${t('doneOn',{d:dn})}${pk&&pv?t('sep')+esc(own?OWN[s.id]||'':(pv.find(p=>p.id===pk)||{}).n||''):''}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}${learn}`}
+  if(dn){const nx=nextOpen();h+=`<p class="note">${t('doneOn',{d:dn})}${pk&&pv?t('sep')+bd(esc(own?OWN[s.id]||'':(pv.find(p=>p.id===pk)||{}).n||'')):''}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}${learn}`}
   else if(s.auto)h+=`<p class="note">${t('tracking')}</p>${learn}`;
   else if(pre.length)h+=`<div class="lock"><b>${t('lockT')}</b>${pre.map(q=>`<a class="link" href="${hrefOf(q)}">${L(q.t)}</a>`).join('')}</div>${skipBtn(s)}${learn}`;
   else{
    if(pv)h+=`<h2>${t('choose')}</h2><div class="opts" role="radiogroup">${pv.map(p=>opt(p,s.id)).join('')}<button class="opt" role="radio" aria-checked="${own}" data-act="pick:${s.id}:own"><span class="rd"></span><b>${t('ownP')}</b></button></div>
      ${own?`<input id="own" data-step="${s.id}" type="text" maxlength="40" placeholder="${t('ownPh')}" value="${esc(OWN[s.id]||'')}" style="margin-top:10px">`:''}`;
-   if(lk)h+=`<a class="btn${seen?' sec':''}" style="margin-top:18px" href="${lk}" target="_blank" rel="noopener" data-act="visit:${s.id}">${t('openSite',{n:L(A[s.a])})}${I.ext}</a><p class="note">${t('goesTo',{h:hostOf(lk)})}</p>`;
+   if(lk)h+=`<a class="btn${seen?' sec':''}" style="margin-top:18px" href="${lk}" target="_blank" rel="noopener" data-act="visit:${s.id}">${t('openSite',{n:bd(L(A[s.a]))})}${I.ext}</a><p class="note">${t('goesTo',{h:bdl(hostOf(lk))})}</p>`;
    h+=learn;foot=`<button class="btn${lk&&!seen?' sec':''}" data-act="done:${s.id}" ${pv&&!okPick?'disabled':''}>${pv?(okPick?t('confirmPick'):t('pickFirst')):(lk&&!seen?t('already'):t('iDid'))}</button>${skipBtn(s)}`}
   return shell(sub(t('tRoad'),'roadmap'),h,'roadmap',foot)+skipSheet(s)},
 
@@ -924,7 +926,7 @@ bank(){const st=steps(),dn=S.done.s2,pk=S.bankPick||'up',bk=BANKS.find(x=>x.id==
   if(dn)h+=`<p class="note">${t('bkDone',{d:dn})}</p>${nx?`<a class="btn" style="margin-top:16px" href="${hrefOf(nx)}">${t('cont',{t:L(nx.t)})}</a>`:''}`;
   else h+=`<div class="banks" role="radiogroup">${BANKS.map(x=>`<button class="bk" role="radio" aria-checked="${pk===x.id}" data-act="bankpick:${x.id}">${LOGOS[x.id]?`<img${x.id==='up'?' class="dk"':''} src="${LOGOS[x.id]}" width="${x.w}" height="${x.h}" alt="${x.n}">`:`<span class="mono">${x.m}</span><span>${x.n}</span>`}${x.rec?`<small>${t('recommended')}</small>`:''}</button>`).join('')}</div>
    <p class="note" style="margin-top:8px">${pk==='up'?t('propPartner')+'. ':''}${t('notPartners')}</p>
-   <a class="btn${seen?' sec':''}" style="margin-top:16px" href="${U(bk.u)}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bk.n})}${I.ext}</a><p class="note">${t('goesTo',{h:hostOf(U(bk.u))})}</p>
+   <a class="btn${seen?' sec':''}" style="margin-top:16px" href="${U(bk.u)}" target="_blank" rel="noopener" data-act="visit:s2">${t('openSite',{n:bd(bk.n)})}${I.ext}</a><p class="note">${t('goesTo',{h:bdl(hostOf(U(bk.u)))})}</p>
    <details class="learn"><summary>${t(pk==='up'?'bkWhat':'learn')}</summary>${pk==='up'?`<ul>${['bk1','bk2','bk3'].map(k=>`<li>${t(k)}</li>`).join('')}</ul><p class="note">${t('bkSrc')}</p>`:`<p>${t('anyP')}</p>`}</details>`,foot=`<button class="btn${seen?'':' sec'}" data-act="done:s2">${seen?t('iDid'):t('already')}</button>${skipBtn(st[1])}`;
   return shell(sub(t('tRoad'),'roadmap'),h,'roadmap',foot)+skipSheet(st[1])},
 
@@ -952,7 +954,7 @@ cash(){const b=bal(S.day),m=monthly(),z=zeroDay(),up=ONEOFF.filter(o=>o.d>S.day)
   ${sell('pro','upCash')}
   ${up.length?`<h2>${t('coming')}</h2><div class="rows">${up.map(o=>`<div><span>${t(o.k)}<small>${t('dueDay',{d:o.d})}</small></span><span class="amt">${aed(o.a)}</span></div>`).join('')}</div>`:''}
   <h2>${t('where')}</h2><div class="rows">${rows.map(r=>`<div><span>${t(r[0])}</span><span class="amt">${aed(r[1])}</span></div>`).join('')}
-   ${S.extra.map(x=>`<div class="new"><span>${x.n}<small>${t('added')}</small></span><span class="amt">${aed(x.mo)}</span></div>`).join('')}</div>
+   ${S.extra.map(x=>`<div class="new"><span>${bd(x.n)}<small>${t('added')}</small></span><span class="amt">${aed(x.mo)}</span></div>`).join('')}</div>
   <p class="note">${t('src')}</p>`;
   return shell(bar(),h,'cash')},
 
@@ -981,9 +983,9 @@ programmes(){const list=PROG.filter(p=>!p.em||S.emirati),sh=S.sheet&&PROG.find(p
    <p class="why">${t('prWhy')}: ${L(p.y)}</p><button class="btn sec" data-act="sheet:${p.id}">${t('prGo')}</button></article>`).join('');
   let page=shell(sub(t('tMore')),h,'more');
   if(sh)page+=`<div class="sheet-bg" data-act="closesheet"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-t" tabindex="-1" data-stop="1"><h3 id="sheet-t">${L(sh.n)}</h3><p class="note" style="margin:0">${t('shT')}</p>
-   <dl class="dl"><dt>${t('shBiz')}</dt><dd>${esc(bizName())}</dd><dt>${t('shLic')}</dt><dd>${t('q1a')}</dd><dt>${t('shAct')}</dt><dd>${t(S.activity==='shop'?'q2b':'q2a')}</dd>
+   <dl class="dl"><dt>${t('shBiz')}</dt><dd>${bd(esc(bizName()))}</dd><dt>${t('shLic')}</dt><dd>${t('q1a')}</dd><dt>${t('shAct')}</dt><dd>${t(S.activity==='shop'?'q2b':'q2a')}</dd>
    <dt>${t('shOwn')}</dt><dd>${t(S.emirati?'q3a':'q3b')}</dd><dt>${t('shDay')}</dt><dd>${S.day}</dd><dt>${t('shRec')}</dt><dd>${'★'.repeat(starsOf(sc))||'–'} ${sc}</dd></dl>
-   <p class="note" style="margin:12px 0 14px">${t('shNote')}</p>${PLINK[sh.id]?`<a class="btn" style="margin-bottom:8px" href="${PLINK[sh.id]}" target="_blank" rel="noopener">${t('openSite',{n:L(sh.by)})}${I.ext}</a>`:''}<button class="btn sec" data-act="closesheet">${t('close')}</button></div></div>`;
+   <p class="note" style="margin:12px 0 14px">${t('shNote')}</p>${PLINK[sh.id]?`<a class="btn" style="margin-bottom:8px" href="${PLINK[sh.id]}" target="_blank" rel="noopener">${t('openSite',{n:bd(L(sh.by))})}${I.ext}</a>`:''}<button class="btn sec" data-act="closesheet">${t('close')}</button></div></div>`;
   return page},
 
 nudges(){const h=`<h1>${t('ngT')}</h1><p class="lede">${t('ngS')}</p><div class="thread">
@@ -1002,7 +1004,7 @@ tiers(){const li=a=>a.map(k=>`<li>${I.tick}<span>${t(k)}</span></li>`).join('');
   <section class="tier em"><header><b>${t('emT')}</b></header><ul>${li(['em1','em2'])}</ul></section><p class="note">${t('tiNote')}</p>`;
   return shell(sub(t('tMore')),h,'more')},
 
-day100(){const h=`<h1>${t('dT')}</h1><p class="lede">${t('dS',{b:esc(bizName())})}</p>${plaque(4,t('gradOf'),t('gradWhen',{m:dateAt(100,0,{month:'long',year:'numeric'})}))}
+day100(){const h=`<h1>${t('dT')}</h1><p class="lede">${t('dS',{b:bd(esc(bizName()))})}</p>${plaque(4,t('gradOf'),t('gradWhen',{m:dateAt(100,0,{month:'long',year:'numeric'})}))}
   <h2>${t('after')}</h2><div class="rows"><div><span>${t('a1')}</span></div><div><span>${t('a2')}</span></div><div><span>${t('a3')}</span></div></div>
   ${sell('exec','upDay')}<button class="btn" style="margin-top:18px" data-act="toast:becomeT">${t('become')}</button>`;
   return shell(sub(t('tMore')),h,'more')},
